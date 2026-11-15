@@ -1,0 +1,52 @@
+name: Sync Clash Mi Overwrite Templates
+
+on:
+  schedule:
+    # 定时校验并同步自定义规则到覆写模板 (UTC): 0 */12 * * *
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'rules/**'
+      - 'scripts/build-override.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-override:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 仓库代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node.js 运行环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 安装依赖 (js-yaml)
+        run: npm install --no-audit --no-fund
+
+      - name: 合并 rules/*.list 到 YAML / JS 覆写模板并执行沙箱校验
+        run: node scripts/build-override.mjs
+
+      - name: 输出规则与模板同步摘要
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/sync-report.md" ]; then
+            cat "$RUNNER_TEMP/sync-report.md" >> $GITHUB_STEP_SUMMARY
+          fi
+      - name: 自动提交更新后的覆写模板
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add override/
+          if git diff --staged --quiet; then
+            echo "覆写模板无实质变更，跳过提交。"
+          else
+            git commit -m "chore(override): sync clash-mi diversion rules and templates"
+            git push
+          fi

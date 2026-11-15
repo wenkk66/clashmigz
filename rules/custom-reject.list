@@ -1,0 +1,4 @@
+# 自定义去广告与隐私遥测拦截规则 (归入 🛡️ 广告拦截 策略组)
+DOMAIN-SUFFIX,app-measurement.com
+DOMAIN-KEYWORD,adservice
+DOMAIN-KEYWORD,pangolin-sdk-toutiao
