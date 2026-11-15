@@ -1,0 +1,6 @@
+{
+  "name": "Clash Mi 订阅编排台",
+  "description": "自动化生成 GitHub 仓库 Clash Mi (Mihomo) 分流订阅配置、GitHub Actions 节点更新流水线与正则过滤规则，支持在线测试与一键推送仓库。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
