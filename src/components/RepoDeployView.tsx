@@ -139,7 +139,7 @@ git push -u origin ${github.branch}`;
             01. 目标 GitHub 仓库与 Clash Mi 覆写订阅链接
           </h2>
           <p className="text-sm text-slate-500 mt-1">
-            将生成的 .yaml 或 .js 链接添加到 Clash Mi「覆写」页，所有机场订阅即可自动套用同一套分流与过滤规则。
+            必须使用下方 raw.githubusercontent.com 或 jsDelivr 直链导入 Clash Mi「覆写」页；若误填带 /blob/ 的 GitHub 网页地址会返回 HTML 导致 SyntaxError: unexpected token &apos;&lt;&apos;。
           </p>
         </div>
 

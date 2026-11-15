@@ -326,12 +326,12 @@ const RULE_PROVIDERS = {
     "path": "./rule_providers/category-ads-all.mrs",
     "interval": 86400
   },
-  "category-ai-!cn": {
+  "ai-non-cn": {
     "type": "http",
     "behavior": "domain",
     "format": "mrs",
     "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs",
-    "path": "./rule_providers/category-ai-!cn.mrs",
+    "path": "./rule_providers/ai-non-cn.mrs",
     "interval": 86400
   },
   "google-gemini": {
@@ -438,12 +438,12 @@ const RULE_PROVIDERS = {
     "path": "./rule_providers/cn-domain.mrs",
     "interval": 86400
   },
-  "geolocation-!cn": {
+  "geolocation-non-cn": {
     "type": "http",
     "behavior": "domain",
     "format": "mrs",
     "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs",
-    "path": "./rule_providers/geolocation-!cn.mrs",
+    "path": "./rule_providers/geolocation-non-cn.mrs",
     "interval": 86400
   },
   "cn-ip": {
@@ -469,7 +469,7 @@ const RULES = [
   "RULE-SET,private,DIRECT",
   "RULE-SET,category-httpdns-cn,🛡️ 广告拦截",
   "RULE-SET,category-ads-all,🛡️ 广告拦截",
-  "RULE-SET,category-ai-!cn,🤖 AI 服务专属",
+  "RULE-SET,ai-non-cn,🤖 AI 服务专属",
   "RULE-SET,google-gemini,🤖 AI 服务专属",
   "RULE-SET,tiktok,🎵 TikTok 专属",
   "RULE-SET,youtube,🎬 流媒体解锁",
@@ -483,7 +483,7 @@ const RULES = [
   "RULE-SET,apple-cn,DIRECT",
   "RULE-SET,microsoft-cn,DIRECT",
   "RULE-SET,cn-domain,DIRECT",
-  "RULE-SET,geolocation-!cn,🚀 节点选择",
+  "RULE-SET,geolocation-non-cn,🚀 节点选择",
   "RULE-SET,cn-ip,DIRECT,no-resolve",
   "GEOIP,LAN,DIRECT,no-resolve",
   "MATCH,🐟 漏网之鱼"
@@ -499,29 +499,39 @@ function compileRegex(pattern) {
 }
 
 function main(config) {
-  const rawProxies = Array.isArray(config.proxies) ? config.proxies : [];
-  const globalExcludeRe = compileRegex(GLOBAL_EXCLUDE);
+  if (!config || typeof config !== 'object') {
+    config = {};
+  }
+  var rawProxies = Array.isArray(config.proxies) ? config.proxies : [];
+  var globalExcludeRe = compileRegex(GLOBAL_EXCLUDE);
 
   // 1. 清洗当前订阅的无效/提示/高倍率节点
-  const cleanProxies = STRIP_EXCLUDED_PROXIES
-    ? rawProxies.filter((p) => p && p.name && !(globalExcludeRe && globalExcludeRe.test(p.name)))
+  var cleanProxies = STRIP_EXCLUDED_PROXIES
+    ? rawProxies.filter(function (p) {
+        return p && p.name && !(globalExcludeRe && globalExcludeRe.test(p.name));
+      })
     : rawProxies;
 
   if (STRIP_EXCLUDED_PROXIES && cleanProxies.length > 0) {
     config.proxies = cleanProxies;
   }
 
-  const allProxyNames = (config.proxies || []).map((p) => p.name).filter(Boolean);
+  var allProxyNames = (config.proxies || [])
+    .map(function (p) {
+      return p.name;
+    })
+    .filter(Boolean);
 
   // 2. 动态匹配每个节点策略组（支持 url-test 自动选择、fallback 故障转移、load-balance 均衡，自动跳过空地区组）
-  const activeGroupNames = new Set(['DIRECT', 'REJECT', 'REJECT-DROP']);
-  const builtGroups = [];
+  var activeGroupNames = { DIRECT: true, REJECT: true, 'REJECT-DROP': true };
+  var builtGroups = [];
 
-  for (const spec of GROUP_SPECS) {
+  for (var i = 0; i < GROUP_SPECS.length; i++) {
+    var spec = GROUP_SPECS[i];
     if (spec.includeAllProxies) {
-      const includeRe = compileRegex(spec.filter);
-      const excludeRe = compileRegex(spec.excludeFilter || GLOBAL_EXCLUDE);
-      const matchedNames = allProxyNames.filter((name) => {
+      var includeRe = compileRegex(spec.filter);
+      var excludeRe = compileRegex(spec.excludeFilter || GLOBAL_EXCLUDE);
+      var matchedNames = allProxyNames.filter(function (name) {
         if (excludeRe && excludeRe.test(name)) return false;
         if (includeRe && !includeRe.test(name)) return false;
         return true;
@@ -531,22 +541,25 @@ function main(config) {
         continue;
       }
 
-      const grpObj = {
+      var grpObj = {
         name: spec.name,
         type: spec.type,
         proxies: matchedNames.length > 0 ? matchedNames : ['DIRECT'],
+        _isNodeGroup: true,
       };
       if (spec.type === 'url-test' || spec.type === 'fallback') {
         grpObj.url = spec.url || 'https://www.gstatic.com/generate_204';
         grpObj.interval = spec.interval || 300;
-        if (spec.type === 'url-test') grpObj.tolerance = spec.tolerance ?? 50;
+        if (spec.type === 'url-test') {
+          grpObj.tolerance = typeof spec.tolerance === 'number' ? spec.tolerance : 50;
+        }
       } else if (spec.type === 'load-balance') {
         grpObj.url = spec.url || 'https://www.gstatic.com/generate_204';
         grpObj.interval = spec.interval || 300;
         grpObj.strategy = spec.strategy || 'consistent-hashing';
       }
-      builtGroups.push({ ...grpObj, _isNodeGroup: true });
-      activeGroupNames.add(spec.name);
+      builtGroups.push(grpObj);
+      activeGroupNames[spec.name] = true;
     } else {
       builtGroups.push({
         name: spec.name,
@@ -554,35 +567,37 @@ function main(config) {
         proxies: spec.proxies,
         _isNodeGroup: false,
       });
-      activeGroupNames.add(spec.name);
+      activeGroupNames[spec.name] = true;
     }
   }
 
   // 3. 清理聚合选择组中已被跳过的空地区引用
-  config['proxy-groups'] = builtGroups.map((grp) => {
-    const isNodeGroup = grp._isNodeGroup;
+  config['proxy-groups'] = builtGroups.map(function (grp) {
+    var isNodeGroup = grp._isNodeGroup;
     delete grp._isNodeGroup;
     if (isNodeGroup) {
       return grp;
     }
-    const validRefs = (grp.proxies || []).filter(
-      (ref) => activeGroupNames.has(ref) || allProxyNames.includes(ref)
-    );
+    var validRefs = (grp.proxies || []).filter(function (ref) {
+      return Boolean(activeGroupNames[ref]) || allProxyNames.indexOf(ref) !== -1;
+    });
     return {
       name: grp.name,
       type: grp.type,
-      proxies: validRefs.length > 0 ? validRefs : (allProxyNames.length > 0 ? allProxyNames.slice(0, 5) : ['DIRECT']),
+      proxies:
+        validRefs.length > 0
+          ? validRefs
+          : allProxyNames.length > 0
+            ? allProxyNames.slice(0, 5)
+            : ['DIRECT'],
     };
   });
 
   // 4. 注入 rule-providers 与分流规则
-  config['rule-providers'] = {
-    ...(config['rule-providers'] || {}),
-    ...RULE_PROVIDERS,
-  };
+  config['rule-providers'] = Object.assign({}, config['rule-providers'] || {}, RULE_PROVIDERS);
   config.rules = RULES;
 
-  // 5. 覆写 DNS 与 Sniffer
+  // 5. 覆写 DNS 与 Sniffer（兼容 Clash Mi 1.0.32 Android 序列化与校验规则）
   if (OVERWRITE_SNIFFER) {
     config.sniffer = {
       enable: true,
@@ -604,8 +619,8 @@ function main(config) {
       'enhanced-mode': "fake-ip",
       'fake-ip-range': '198.18.0.1/16',
       'fake-ip-filter': [
-        '*.lan',
-        '*.local',
+        '+.lan',
+        '+.local',
         'localhost.ptlogin2.qq.com',
         '+.msftconnecttest.com',
         '+.msftncsi.com',
@@ -613,7 +628,7 @@ function main(config) {
         'RULE-SET:cn-domain',
       ],
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
-      'proxy-server-nameserver': ["https://dns.alidns.com/dns-query"],
+      'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', "https://dns.alidns.com/dns-query"],
       'direct-nameserver': ["https://dns.alidns.com/dns-query"],
       nameserver: ["https://1.1.1.1/dns-query"],
       'nameserver-policy': {

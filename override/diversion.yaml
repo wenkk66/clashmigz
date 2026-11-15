@@ -4,7 +4,7 @@
 # 特性: 自动测速优选(url-test) / 故障转移(fallback) / 负载均衡 / 去广告(HTTPDNS+AdGuard)
 # 用法: 导入 Clash Mi「覆写」页或通过 Raw URL 添加，自动作用于客户端内所有订阅
 # ============================================================================
-sniffer:
+sniffer!:
   enable: true
   force-dns-mapping: true
   parse-pure-ip: true
@@ -22,15 +22,15 @@ sniffer:
       ports:
         - 443
         - 8443
-dns:
+dns!:
   enable: true
   ipv6: false
   respect-rules: true
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter:
-    - '*.lan'
-    - '*.local'
+    - +.lan
+    - +.local
     - localhost.ptlogin2.qq.com
     - +.msftconnecttest.com
     - +.msftncsi.com
@@ -40,6 +40,8 @@ dns:
     - 223.5.5.5
     - 119.29.29.29
   proxy-server-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
     - https://dns.alidns.com/dns-query
   direct-nameserver:
     - https://dns.alidns.com/dns-query
@@ -52,7 +54,7 @@ dns:
       - https://dns.alidns.com/dns-query
     geosite:geolocation-!cn:
       - https://1.1.1.1/dns-query
-proxy-groups:
+proxy-groups!:
   - name: 🚀 节点选择
     type: select
     proxies:
@@ -200,7 +202,7 @@ proxy-groups:
       - ♻️ 自动测速优选
       - 🚨 故障转移
       - DIRECT
-rule-providers:
+rule-providers!:
   private:
     type: http
     behavior: domain
@@ -222,12 +224,12 @@ rule-providers:
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ads-all.mrs
     path: ./rule_providers/category-ads-all.mrs
     interval: 86400
-  category-ai-!cn:
+  ai-non-cn:
     type: http
     behavior: domain
     format: mrs
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs
-    path: ./rule_providers/category-ai-!cn.mrs
+    path: ./rule_providers/ai-non-cn.mrs
     interval: 86400
   google-gemini:
     type: http
@@ -320,12 +322,12 @@ rule-providers:
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs
     path: ./rule_providers/cn-domain.mrs
     interval: 86400
-  geolocation-!cn:
+  geolocation-non-cn:
     type: http
     behavior: domain
     format: mrs
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs
-    path: ./rule_providers/geolocation-!cn.mrs
+    path: ./rule_providers/geolocation-non-cn.mrs
     interval: 86400
   cn-ip:
     type: http
@@ -334,7 +336,7 @@ rule-providers:
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs
     path: ./rule_providers/cn-ip.mrs
     interval: 86400
-rules:
+rules!:
   - DOMAIN-SUFFIX,app-measurement.com,🛡️ 广告拦截
   - DOMAIN-KEYWORD,adservice,🛡️ 广告拦截
   - DOMAIN-KEYWORD,pangolin-sdk-toutiao,🛡️ 广告拦截
@@ -347,7 +349,7 @@ rules:
   - RULE-SET,private,DIRECT
   - RULE-SET,category-httpdns-cn,🛡️ 广告拦截
   - RULE-SET,category-ads-all,🛡️ 广告拦截
-  - RULE-SET,category-ai-!cn,🤖 AI 服务专属
+  - RULE-SET,ai-non-cn,🤖 AI 服务专属
   - RULE-SET,google-gemini,🤖 AI 服务专属
   - RULE-SET,tiktok,🎵 TikTok 专属
   - RULE-SET,youtube,🎬 流媒体解锁
@@ -361,7 +363,7 @@ rules:
   - RULE-SET,apple-cn,DIRECT
   - RULE-SET,microsoft-cn,DIRECT
   - RULE-SET,cn-domain,DIRECT
-  - RULE-SET,geolocation-!cn,🚀 节点选择
+  - RULE-SET,geolocation-non-cn,🚀 节点选择
   - RULE-SET,cn-ip,DIRECT,no-resolve
   - GEOIP,LAN,DIRECT,no-resolve
   - MATCH,🐟 漏网之鱼

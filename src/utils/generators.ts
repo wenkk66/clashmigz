@@ -135,7 +135,7 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
   const config: Record<string, unknown> = {};
 
   if (overwrite.overwriteSniffer) {
-    config.sniffer = {
+    config['sniffer!'] = {
       enable: true,
       'force-dns-mapping': true,
       'parse-pure-ip': true,
@@ -148,15 +148,15 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
   }
 
   if (overwrite.overwriteDns) {
-    config.dns = {
+    config['dns!'] = {
       enable: true,
       ipv6: kernel.ipv6,
       'respect-rules': true,
       'enhanced-mode': kernel.dnsMode,
       'fake-ip-range': '198.18.0.1/16',
       'fake-ip-filter': [
-        '*.lan',
-        '*.local',
+        '+.lan',
+        '+.local',
         'localhost.ptlogin2.qq.com',
         '+.msftconnecttest.com',
         '+.msftncsi.com',
@@ -164,7 +164,7 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
         'RULE-SET:cn-domain',
       ],
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
-      'proxy-server-nameserver': [kernel.dohChina || 'https://dns.alidns.com/dns-query'],
+      'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', kernel.dohChina || 'https://dns.alidns.com/dns-query'],
       'direct-nameserver': [kernel.dohChina || 'https://dns.alidns.com/dns-query'],
       nameserver: [kernel.dohGlobal || 'https://1.1.1.1/dns-query'],
       'nameserver-policy': {
@@ -177,11 +177,11 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
     };
   }
 
-  config['proxy-groups'] = proxyGroupsArr;
+  config['proxy-groups!'] = proxyGroupsArr;
   if (Object.keys(ruleProvidersObj).length > 0) {
-    config['rule-providers'] = ruleProvidersObj;
+    config['rule-providers!'] = ruleProvidersObj;
   }
-  config.rules = rulesList;
+  config['rules!'] = rulesList;
 
   return config;
 }
@@ -307,29 +307,39 @@ function compileRegex(pattern) {
 }
 
 function main(config) {
-  const rawProxies = Array.isArray(config.proxies) ? config.proxies : [];
-  const globalExcludeRe = compileRegex(GLOBAL_EXCLUDE);
+  if (!config || typeof config !== 'object') {
+    config = {};
+  }
+  var rawProxies = Array.isArray(config.proxies) ? config.proxies : [];
+  var globalExcludeRe = compileRegex(GLOBAL_EXCLUDE);
 
   // 1. 清洗当前订阅的无效/提示/高倍率节点
-  const cleanProxies = STRIP_EXCLUDED_PROXIES
-    ? rawProxies.filter((p) => p && p.name && !(globalExcludeRe && globalExcludeRe.test(p.name)))
+  var cleanProxies = STRIP_EXCLUDED_PROXIES
+    ? rawProxies.filter(function (p) {
+        return p && p.name && !(globalExcludeRe && globalExcludeRe.test(p.name));
+      })
     : rawProxies;
 
   if (STRIP_EXCLUDED_PROXIES && cleanProxies.length > 0) {
     config.proxies = cleanProxies;
   }
 
-  const allProxyNames = (config.proxies || []).map((p) => p.name).filter(Boolean);
+  var allProxyNames = (config.proxies || [])
+    .map(function (p) {
+      return p.name;
+    })
+    .filter(Boolean);
 
   // 2. 动态匹配每个节点策略组（支持 url-test 自动选择、fallback 故障转移、load-balance 均衡，自动跳过空地区组）
-  const activeGroupNames = new Set(['DIRECT', 'REJECT', 'REJECT-DROP']);
-  const builtGroups = [];
+  var activeGroupNames = { DIRECT: true, REJECT: true, 'REJECT-DROP': true };
+  var builtGroups = [];
 
-  for (const spec of GROUP_SPECS) {
+  for (var i = 0; i < GROUP_SPECS.length; i++) {
+    var spec = GROUP_SPECS[i];
     if (spec.includeAllProxies) {
-      const includeRe = compileRegex(spec.filter);
-      const excludeRe = compileRegex(spec.excludeFilter || GLOBAL_EXCLUDE);
-      const matchedNames = allProxyNames.filter((name) => {
+      var includeRe = compileRegex(spec.filter);
+      var excludeRe = compileRegex(spec.excludeFilter || GLOBAL_EXCLUDE);
+      var matchedNames = allProxyNames.filter(function (name) {
         if (excludeRe && excludeRe.test(name)) return false;
         if (includeRe && !includeRe.test(name)) return false;
         return true;
@@ -339,22 +349,25 @@ function main(config) {
         continue;
       }
 
-      const grpObj = {
+      var grpObj = {
         name: spec.name,
         type: spec.type,
         proxies: matchedNames.length > 0 ? matchedNames : ['DIRECT'],
+        _isNodeGroup: true,
       };
       if (spec.type === 'url-test' || spec.type === 'fallback') {
         grpObj.url = spec.url || 'https://www.gstatic.com/generate_204';
         grpObj.interval = spec.interval || 300;
-        if (spec.type === 'url-test') grpObj.tolerance = spec.tolerance ?? 50;
+        if (spec.type === 'url-test') {
+          grpObj.tolerance = typeof spec.tolerance === 'number' ? spec.tolerance : 50;
+        }
       } else if (spec.type === 'load-balance') {
         grpObj.url = spec.url || 'https://www.gstatic.com/generate_204';
         grpObj.interval = spec.interval || 300;
         grpObj.strategy = spec.strategy || 'consistent-hashing';
       }
-      builtGroups.push({ ...grpObj, _isNodeGroup: true });
-      activeGroupNames.add(spec.name);
+      builtGroups.push(grpObj);
+      activeGroupNames[spec.name] = true;
     } else {
       builtGroups.push({
         name: spec.name,
@@ -362,35 +375,37 @@ function main(config) {
         proxies: spec.proxies,
         _isNodeGroup: false,
       });
-      activeGroupNames.add(spec.name);
+      activeGroupNames[spec.name] = true;
     }
   }
 
   // 3. 清理聚合选择组中已被跳过的空地区引用
-  config['proxy-groups'] = builtGroups.map((grp) => {
-    const isNodeGroup = grp._isNodeGroup;
+  config['proxy-groups'] = builtGroups.map(function (grp) {
+    var isNodeGroup = grp._isNodeGroup;
     delete grp._isNodeGroup;
     if (isNodeGroup) {
       return grp;
     }
-    const validRefs = (grp.proxies || []).filter(
-      (ref) => activeGroupNames.has(ref) || allProxyNames.includes(ref)
-    );
+    var validRefs = (grp.proxies || []).filter(function (ref) {
+      return Boolean(activeGroupNames[ref]) || allProxyNames.indexOf(ref) !== -1;
+    });
     return {
       name: grp.name,
       type: grp.type,
-      proxies: validRefs.length > 0 ? validRefs : (allProxyNames.length > 0 ? allProxyNames.slice(0, 5) : ['DIRECT']),
+      proxies:
+        validRefs.length > 0
+          ? validRefs
+          : allProxyNames.length > 0
+            ? allProxyNames.slice(0, 5)
+            : ['DIRECT'],
     };
   });
 
   // 4. 注入 rule-providers 与分流规则
-  config['rule-providers'] = {
-    ...(config['rule-providers'] || {}),
-    ...RULE_PROVIDERS,
-  };
+  config['rule-providers'] = Object.assign({}, config['rule-providers'] || {}, RULE_PROVIDERS);
   config.rules = RULES;
 
-  // 5. 覆写 DNS 与 Sniffer
+  // 5. 覆写 DNS 与 Sniffer（兼容 Clash Mi 1.0.32 Android 序列化与校验规则）
   if (OVERWRITE_SNIFFER) {
     config.sniffer = {
       enable: true,
@@ -412,8 +427,8 @@ function main(config) {
       'enhanced-mode': ${JSON.stringify(kernel.dnsMode)},
       'fake-ip-range': '198.18.0.1/16',
       'fake-ip-filter': [
-        '*.lan',
-        '*.local',
+        '+.lan',
+        '+.local',
         'localhost.ptlogin2.qq.com',
         '+.msftconnecttest.com',
         '+.msftncsi.com',
@@ -421,7 +436,7 @@ function main(config) {
         'RULE-SET:cn-domain',
       ],
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
-      'proxy-server-nameserver': [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
+      'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', ${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
       'direct-nameserver': [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
       nameserver: [${JSON.stringify(kernel.dohGlobal || 'https://1.1.1.1/dns-query')}],
       'nameserver-policy': {
@@ -565,14 +580,16 @@ function main() {
   if (fs.existsSync(YAML_OVERRIDE_PATH)) {
     const rawYaml = fs.readFileSync(YAML_OVERRIDE_PATH, 'utf8');
     const parsed = yamlLoad(rawYaml);
-    const staticRules = (parsed.rules || []).filter(
+    const rulesKey = Object.prototype.hasOwnProperty.call(parsed, 'rules!') ? 'rules!' : 'rules';
+    const currentRules = parsed[rulesKey] || [];
+    const staticRules = currentRules.filter(
       (r) => r.startsWith('RULE-SET,') || r.startsWith('GEOIP,') || r.startsWith('MATCH,')
     );
     const nextRules = [...customMerged, ...staticRules];
     yamlRulesCount = nextRules.length;
 
-    if (JSON.stringify(parsed.rules) !== JSON.stringify(nextRules)) {
-      parsed.rules = nextRules;
+    if (JSON.stringify(currentRules) !== JSON.stringify(nextRules)) {
+      parsed[rulesKey] = nextRules;
       const header = [
         '# ============================================================================',
         '# Clash Mi 全局分流覆写模板 (YAML Overwrite)',

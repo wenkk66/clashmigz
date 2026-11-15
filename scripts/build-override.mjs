@@ -40,14 +40,16 @@ function main() {
   if (fs.existsSync(YAML_OVERRIDE_PATH)) {
     const rawYaml = fs.readFileSync(YAML_OVERRIDE_PATH, 'utf8');
     const parsed = yamlLoad(rawYaml);
-    const staticRules = (parsed.rules || []).filter(
+    const rulesKey = Object.prototype.hasOwnProperty.call(parsed, 'rules!') ? 'rules!' : 'rules';
+    const currentRules = parsed[rulesKey] || [];
+    const staticRules = currentRules.filter(
       (r) => r.startsWith('RULE-SET,') || r.startsWith('GEOIP,') || r.startsWith('MATCH,')
     );
     const nextRules = [...customMerged, ...staticRules];
     yamlRulesCount = nextRules.length;
 
-    if (JSON.stringify(parsed.rules) !== JSON.stringify(nextRules)) {
-      parsed.rules = nextRules;
+    if (JSON.stringify(currentRules) !== JSON.stringify(nextRules)) {
+      parsed[rulesKey] = nextRules;
       const header = [
         '# ============================================================================',
         '# Clash Mi 全局分流覆写模板 (YAML Overwrite)',
