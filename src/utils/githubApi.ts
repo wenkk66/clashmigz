@@ -58,6 +58,7 @@ export async function pushFilesToGitHubRepo(params: {
 
   onProgress?.({ step: `检查或创建仓库 ${owner}/${repo}...`, completed: 0, total: totalSteps });
 
+  let effectiveBranch = branch;
   const checkRes = await githubFetch(`https://api.github.com/repos/${owner}/${repo}`, token);
   if (checkRes.status === 404) {
     const createRes = await githubFetch('https://api.github.com/user/repos', token, {
@@ -73,11 +74,20 @@ export async function pushFilesToGitHubRepo(params: {
       const errBody = await createRes.json().catch(() => ({}));
       throw new Error(`创建仓库失败: ${errBody.message || createRes.statusText}`);
     }
+    const createdRepo = await createRes.json().catch(() => null);
+    if (createdRepo?.default_branch) {
+      effectiveBranch = createdRepo.default_branch;
+    }
     // Wait briefly for GitHub to finish initializing default branch
     await new Promise((r) => setTimeout(r, 1200));
   } else if (!checkRes.ok) {
     const errBody = await checkRes.json().catch(() => ({}));
     throw new Error(`访问仓库失败: ${errBody.message || checkRes.statusText}`);
+  } else {
+    const existingRepo = await checkRes.json().catch(() => null);
+    if (existingRepo?.default_branch) {
+      effectiveBranch = existingRepo.default_branch;
+    }
   }
 
   for (let i = 0; i < files.length; i++) {
@@ -91,7 +101,7 @@ export async function pushFilesToGitHubRepo(params: {
     const contentEndpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${file.path}`;
     let existingSha: string | undefined;
 
-    const getFileRes = await githubFetch(`${contentEndpoint}?ref=${encodeURIComponent(branch)}`, token);
+    const getFileRes = await githubFetch(`${contentEndpoint}?ref=${encodeURIComponent(effectiveBranch)}`, token);
     if (getFileRes.ok) {
       const existingData = await getFileRes.json();
       existingSha = existingData.sha;
@@ -102,7 +112,7 @@ export async function pushFilesToGitHubRepo(params: {
       body: JSON.stringify({
         message: `${commitMessage} [${file.path}]`,
         content: encodeBase64Utf8(file.content),
-        branch,
+        branch: effectiveBranch,
         ...(existingSha ? { sha: existingSha } : {}),
       }),
     });
@@ -117,6 +127,6 @@ export async function pushFilesToGitHubRepo(params: {
 
   return {
     repoUrl: `https://github.com/${owner}/${repo}`,
-    branch,
+    branch: effectiveBranch,
   };
 }

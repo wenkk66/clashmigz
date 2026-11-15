@@ -116,6 +116,12 @@ git push -u origin ${github.branch}`;
         files,
         onProgress: setPushProgress,
       });
+      if (result.branch !== github.branch) {
+        onChange({
+          ...state,
+          github: { ...state.github, branch: result.branch },
+        });
+      }
       setPushedRepoUrl(result.repoUrl);
     } catch (err) {
       setPushError(err instanceof Error ? err.message : '推送仓库失败');
