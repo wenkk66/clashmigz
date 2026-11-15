@@ -106,11 +106,12 @@ function main() {
     });
     const hasFailover = dryRun['proxy-groups'].some((g) => g.type === 'fallback');
     const hasUrlTest = dryRun['proxy-groups'].some((g) => g.type === 'url-test');
+    const autoIsFirst = Boolean(dryRun['proxy-groups'][0] && dryRun['proxy-groups'][0].type === 'url-test');
     const selectGroup = dryRun['proxy-groups'].find((g) => g.name.includes('节点选择'));
     const hasDirectNodesInSelect = Boolean(
       selectGroup && selectGroup.proxies.some((p) => p.includes('10Gbps')) && selectGroup.proxies.some((p) => p.includes('GB'))
     );
-    jsStatus = `通过 (${dryRun['proxy-groups'].length} 组 / ${dryRun.rules.length} 规则 / 自动测速:${hasUrlTest} / 故障转移:${hasFailover} / 节点列表可见:${hasDirectNodesInSelect})`;
+    jsStatus = `通过 (${dryRun['proxy-groups'].length} 组 / ${dryRun.rules.length} 规则 / 自动测速首位:${autoIsFirst && hasUrlTest} / 故障转移:${hasFailover} / 节点列表可见:${hasDirectNodesInSelect})`;
   }
 
   const report = [

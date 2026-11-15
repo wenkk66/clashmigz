@@ -55,6 +55,13 @@ dns!:
     RULE-SET:private,cn-domain,apple-cn,microsoft-cn:
       - https://dns.alidns.com/dns-query
 proxy-groups!:
+  - name: ♻️ 自动测速优选
+    type: url-test
+    include-all: true
+    exclude-filter: 剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\d+(?:\.\d+)?\s?(?:GB|TB|MB)\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
   - name: 🚀 节点选择
     type: select
     proxies:
@@ -72,17 +79,6 @@ proxy-groups!:
       - DIRECT
     include-all: true
     exclude-filter: 剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\d+(?:\.\d+)?\s?(?:GB|TB|MB)\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国
-  - name: 🎯 手动节点列表
-    type: select
-    include-all: true
-    exclude-filter: 剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\d+(?:\.\d+)?\s?(?:GB|TB|MB)\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国
-  - name: ♻️ 自动测速优选
-    type: url-test
-    include-all: true
-    exclude-filter: 剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\d+(?:\.\d+)?\s?(?:GB|TB|MB)\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国
-    url: https://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 50
   - name: 🚨 故障转移
     type: fallback
     include-all: true
@@ -96,22 +92,21 @@ proxy-groups!:
     url: https://www.gstatic.com/generate_204
     interval: 300
     strategy: consistent-hashing
-  - name: 🛡️ 广告拦截
+  - name: 🎯 手动节点列表
     type: select
-    proxies:
-      - REJECT
-      - REJECT-DROP
-      - DIRECT
+    include-all: true
+    exclude-filter: 剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\d+(?:\.\d+)?\s?(?:GB|TB|MB)\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国
   - name: 📺 YouTube 专属
     type: select
     proxies:
+      - ♻️ 自动测速优选
       - 🇭🇰 香港节点
       - 🇹🇼 台湾节点
       - 🇸🇬 狮城节点
       - 🇯🇵 日本节点
       - 🇺🇸 美国节点
+      - 🎯 手动节点列表
       - 🚀 节点选择
-      - ♻️ 自动测速优选
   - name: 🤖 AI 服务专属
     type: select
     proxies:
@@ -119,6 +114,7 @@ proxy-groups!:
       - 🇺🇸 美国节点
       - 🇯🇵 日本节点
       - 🇹🇼 台湾节点
+      - 🎯 手动节点列表
     filter: 美|新|日|台|US|SG|JP|TW|🇺🇸|🇸🇬|🇯🇵|🇹🇼
     exclude-filter: 剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\d+(?:\.\d+)?\s?(?:GB|TB|MB)\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国|港|HK|Hong|🇭🇰|俄|RU|CN
   - name: 🎵 TikTok 专属
@@ -132,6 +128,7 @@ proxy-groups!:
   - name: 🎬 流媒体解锁
     type: select
     proxies:
+      - ♻️ 自动测速优选
       - 🚀 节点选择
       - 🚨 故障转移
       - 🇭🇰 香港节点
@@ -142,6 +139,7 @@ proxy-groups!:
   - name: 📲 电报与社交
     type: select
     proxies:
+      - ♻️ 自动测速优选
       - 🚀 节点选择
       - 🚨 故障转移
       - 🇸🇬 狮城节点
@@ -152,10 +150,17 @@ proxy-groups!:
     type: select
     proxies:
       - DIRECT
+      - ♻️ 自动测速优选
       - 🚀 节点选择
       - 🇭🇰 香港节点
       - 🇯🇵 日本节点
       - 🇺🇸 美国节点
+  - name: 🛡️ 广告拦截
+    type: select
+    proxies:
+      - REJECT
+      - REJECT-DROP
+      - DIRECT
   - name: 🇭🇰 香港节点
     type: url-test
     include-all: true
@@ -215,8 +220,8 @@ proxy-groups!:
   - name: 🐟 漏网之鱼
     type: select
     proxies:
-      - 🚀 节点选择
       - ♻️ 自动测速优选
+      - 🚀 节点选择
       - 🚨 故障转移
       - DIRECT
 rule-providers!:
@@ -236,17 +241,10 @@ rule-providers!:
     interval: 86400
   awavenue-ads:
     type: http
-    behavior: classical
-    format: yaml
-    url: https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/refs/heads/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml
-    path: ./rule_providers/awavenue-ads.yaml
-    interval: 86400
-  anti-ad:
-    type: http
     behavior: domain
-    format: yaml
-    url: https://anti-ad.net/clash.yaml
-    path: ./rule_providers/anti-ad.yaml
+    format: mrs
+    url: https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs
+    path: ./rule_providers/awavenue-ads.mrs
     interval: 86400
   category-ads-all:
     type: http
@@ -254,6 +252,20 @@ rule-providers!:
     format: mrs
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ads-all.mrs
     path: ./rule_providers/category-ads-all.mrs
+    interval: 86400
+  adguard-base:
+    type: http
+    behavior: domain
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdGuardSDNSFilter/AdGuardSDNSFilter_Domain.yaml
+    path: ./rule_providers/adguard-base.yaml
+    interval: 86400
+  mobile-ad-enhance:
+    type: http
+    behavior: domain
+    format: yaml
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising_Domain.yaml
+    path: ./rule_providers/mobile-ad-enhance.yaml
     interval: 86400
   ai-non-cn:
     type: http
@@ -388,8 +400,9 @@ rules!:
   - RULE-SET,private,DIRECT
   - RULE-SET,category-httpdns-cn,🛡️ 广告拦截
   - RULE-SET,awavenue-ads,🛡️ 广告拦截
-  - RULE-SET,anti-ad,🛡️ 广告拦截
   - RULE-SET,category-ads-all,🛡️ 广告拦截
+  - RULE-SET,adguard-base,🛡️ 广告拦截
+  - RULE-SET,mobile-ad-enhance,🛡️ 广告拦截
   - RULE-SET,ai-non-cn,🤖 AI 服务专属
   - RULE-SET,google-gemini,🤖 AI 服务专属
   - RULE-SET,tiktok,🎵 TikTok 专属

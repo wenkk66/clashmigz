@@ -13,6 +13,19 @@ const OVERWRITE_SNIFFER = true;
 
 const GROUP_SPECS = [
   {
+    "id": "grp-auto",
+    "name": "♻️ 自动测速优选",
+    "type": "url-test",
+    "filter": "",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "url": "https://www.gstatic.com/generate_204",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": true,
+    "proxies": []
+  },
+  {
     "id": "grp-select",
     "name": "🚀 节点选择",
     "type": "select",
@@ -37,32 +50,6 @@ const GROUP_SPECS = [
       "🇪🇺 欧洲节点",
       "DIRECT"
     ]
-  },
-  {
-    "id": "grp-manual",
-    "name": "🎯 手动节点列表",
-    "type": "select",
-    "filter": "",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
-    "url": "",
-    "interval": 300,
-    "tolerance": 50,
-    "strategy": "consistent-hashing",
-    "includeAllProxies": true,
-    "proxies": []
-  },
-  {
-    "id": "grp-auto",
-    "name": "♻️ 自动测速优选",
-    "type": "url-test",
-    "filter": "",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
-    "url": "https://www.gstatic.com/generate_204",
-    "interval": 300,
-    "tolerance": 50,
-    "strategy": "consistent-hashing",
-    "includeAllProxies": true,
-    "proxies": []
   },
   {
     "id": "grp-failover",
@@ -91,21 +78,17 @@ const GROUP_SPECS = [
     "proxies": []
   },
   {
-    "id": "grp-ads",
-    "name": "🛡️ 广告拦截",
+    "id": "grp-manual",
+    "name": "🎯 手动节点列表",
     "type": "select",
     "filter": "",
-    "excludeFilter": "",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "",
     "interval": 300,
     "tolerance": 50,
     "strategy": "consistent-hashing",
-    "includeAllProxies": false,
-    "proxies": [
-      "REJECT",
-      "REJECT-DROP",
-      "DIRECT"
-    ]
+    "includeAllProxies": true,
+    "proxies": []
   },
   {
     "id": "grp-youtube",
@@ -119,13 +102,14 @@ const GROUP_SPECS = [
     "strategy": "consistent-hashing",
     "includeAllProxies": false,
     "proxies": [
+      "♻️ 自动测速优选",
       "🇭🇰 香港节点",
       "🇹🇼 台湾节点",
       "🇸🇬 狮城节点",
       "🇯🇵 日本节点",
       "🇺🇸 美国节点",
-      "🚀 节点选择",
-      "♻️ 自动测速优选"
+      "🎯 手动节点列表",
+      "🚀 节点选择"
     ]
   },
   {
@@ -143,7 +127,8 @@ const GROUP_SPECS = [
       "🇸🇬 狮城节点",
       "🇺🇸 美国节点",
       "🇯🇵 日本节点",
-      "🇹🇼 台湾节点"
+      "🇹🇼 台湾节点",
+      "🎯 手动节点列表"
     ]
   },
   {
@@ -177,6 +162,7 @@ const GROUP_SPECS = [
     "strategy": "consistent-hashing",
     "includeAllProxies": false,
     "proxies": [
+      "♻️ 自动测速优选",
       "🚀 节点选择",
       "🚨 故障转移",
       "🇭🇰 香港节点",
@@ -198,6 +184,7 @@ const GROUP_SPECS = [
     "strategy": "consistent-hashing",
     "includeAllProxies": false,
     "proxies": [
+      "♻️ 自动测速优选",
       "🚀 节点选择",
       "🚨 故障转移",
       "🇸🇬 狮城节点",
@@ -219,10 +206,28 @@ const GROUP_SPECS = [
     "includeAllProxies": false,
     "proxies": [
       "DIRECT",
+      "♻️ 自动测速优选",
       "🚀 节点选择",
       "🇭🇰 香港节点",
       "🇯🇵 日本节点",
       "🇺🇸 美国节点"
+    ]
+  },
+  {
+    "id": "grp-ads",
+    "name": "🛡️ 广告拦截",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "REJECT",
+      "REJECT-DROP",
+      "DIRECT"
     ]
   },
   {
@@ -328,8 +333,8 @@ const GROUP_SPECS = [
     "strategy": "consistent-hashing",
     "includeAllProxies": false,
     "proxies": [
-      "🚀 节点选择",
       "♻️ 自动测速优选",
+      "🚀 节点选择",
       "🚨 故障转移",
       "DIRECT"
     ]
@@ -355,18 +360,10 @@ const RULE_PROVIDERS = {
   },
   "awavenue-ads": {
     "type": "http",
-    "behavior": "classical",
-    "format": "yaml",
-    "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/refs/heads/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml",
-    "path": "./rule_providers/awavenue-ads.yaml",
-    "interval": 86400
-  },
-  "anti-ad": {
-    "type": "http",
     "behavior": "domain",
-    "format": "yaml",
-    "url": "https://anti-ad.net/clash.yaml",
-    "path": "./rule_providers/anti-ad.yaml",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs",
+    "path": "./rule_providers/awavenue-ads.mrs",
     "interval": 86400
   },
   "category-ads-all": {
@@ -375,6 +372,22 @@ const RULE_PROVIDERS = {
     "format": "mrs",
     "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ads-all.mrs",
     "path": "./rule_providers/category-ads-all.mrs",
+    "interval": 86400
+  },
+  "adguard-base": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "yaml",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdGuardSDNSFilter/AdGuardSDNSFilter_Domain.yaml",
+    "path": "./rule_providers/adguard-base.yaml",
+    "interval": 86400
+  },
+  "mobile-ad-enhance": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "yaml",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising_Domain.yaml",
+    "path": "./rule_providers/mobile-ad-enhance.yaml",
     "interval": 86400
   },
   "ai-non-cn": {
@@ -528,8 +541,9 @@ const RULES = [
   "RULE-SET,private,DIRECT",
   "RULE-SET,category-httpdns-cn,🛡️ 广告拦截",
   "RULE-SET,awavenue-ads,🛡️ 广告拦截",
-  "RULE-SET,anti-ad,🛡️ 广告拦截",
   "RULE-SET,category-ads-all,🛡️ 广告拦截",
+  "RULE-SET,adguard-base,🛡️ 广告拦截",
+  "RULE-SET,mobile-ad-enhance,🛡️ 广告拦截",
   "RULE-SET,ai-non-cn,🤖 AI 服务专属",
   "RULE-SET,google-gemini,🤖 AI 服务专属",
   "RULE-SET,tiktok,🎵 TikTok 专属",

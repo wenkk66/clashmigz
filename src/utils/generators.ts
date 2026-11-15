@@ -104,9 +104,12 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
         ? 'text'
         : 'yaml';
     const ext = fmt === 'text' ? 'txt' : fmt;
+    const resolvedBehavior = isMrs
+      ? mod.mrsBehavior || (fmt === 'mrs' && mod.behavior === 'classical' ? 'domain' : mod.behavior)
+      : mod.behavior;
     ruleProvidersObj[mod.providerName] = {
       type: 'http',
-      behavior: mod.behavior,
+      behavior: resolvedBehavior,
       format: fmt,
       url: chosenUrl,
       path: `./rule_providers/${mod.providerName}.${ext}`,
@@ -252,9 +255,12 @@ export function generateOverwriteJsString(state: ClashWorkspaceState): string {
         ? 'text'
         : 'yaml';
     const ext = fmt === 'text' ? 'txt' : fmt;
+    const resolvedBehavior = isMrs
+      ? mod.mrsBehavior || (fmt === 'mrs' && mod.behavior === 'classical' ? 'domain' : mod.behavior)
+      : mod.behavior;
     ruleProvidersObj[mod.providerName] = {
       type: 'http',
-      behavior: mod.behavior,
+      behavior: resolvedBehavior,
       format: fmt,
       url: chosenUrl,
       path: `./rule_providers/${mod.providerName}.${ext}`,
@@ -717,11 +723,12 @@ function main() {
     });
     const hasFailover = dryRun['proxy-groups'].some((g) => g.type === 'fallback');
     const hasUrlTest = dryRun['proxy-groups'].some((g) => g.type === 'url-test');
+    const autoIsFirst = Boolean(dryRun['proxy-groups'][0] && dryRun['proxy-groups'][0].type === 'url-test');
     const selectGroup = dryRun['proxy-groups'].find((g) => g.name.includes('节点选择'));
     const hasDirectNodesInSelect = Boolean(
       selectGroup && selectGroup.proxies.some((p) => p.includes('10Gbps')) && selectGroup.proxies.some((p) => p.includes('GB'))
     );
-    jsStatus = \`通过 (\${dryRun['proxy-groups'].length} 组 / \${dryRun.rules.length} 规则 / 自动测速:\${hasUrlTest} / 故障转移:\${hasFailover} / 节点列表可见:\${hasDirectNodesInSelect})\`;
+    jsStatus = \`通过 (\${dryRun['proxy-groups'].length} 组 / \${dryRun.rules.length} 规则 / 自动测速首位:\${autoIsFirst && hasUrlTest} / 故障转移:\${hasFailover} / 节点列表可见:\${hasDirectNodesInSelect})\`;
   }
 
   const report = [
@@ -775,11 +782,11 @@ export function generateReadmeMd(state: ClashWorkspaceState): string {
 
 ## 内置核心能力
 
+- **自动测速优先 (\`url-test\`)**：\`♻️ 自动测速优选\` 置于策略组与主选择组第一位置，全节点与各地区组支持 50ms 容差自动切最优节点。
 - **完整节点列表可见**：主组 \`🚀 节点选择\` 同时保留地区分组与全部清洗后单节点，另附独立 \`🎯 手动节点列表\`，兼容 \`proxies\` 与 \`proxy-providers\` 订阅。
-- **自动测速选择 (\`url-test\`)**：全节点自动优选与各地区（港/台/日/狮城/美/韩/欧）内部 50ms 容差自动切最优节点。
 - **自动故障转移 (\`fallback\`)**：每 180 秒探测可用性，当前节点失联时自动无缝切换至下一个可用节点。
 - **负载均衡 (\`load-balance\`)**：基于 \`consistent-hashing\` 会话保持的并发分流。
-- **多引擎去广告与 YouTube 优化**：集成 **AWAvenue-Ads（秋风广告规则）**、**anti-AD**、**MetaCubeX category-ads-all** 与 **HTTPDNS 拦截**，内置 \`AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube))\` 阻断 YouTube QUIC 强制走 TCP 嗅探，并提供 \`📺 YouTube 专属\` 分组。
+- **分级多引擎去广告与 YouTube 优化**（当前等级：\`${kernel.adBlockLevel || 'balanced'}\`）：支持按设备性能一键切换轻量 / 均衡 / 强力满血去广告，集成 **AdGuard 基础 (SDNS)**、**blackmatrix7 移动端广告增强**、**AWAvenue-Ads（秋风 .mrs）**、**217heidai AdGuard+EasyList 全量**、**anti-AD** 与 **HTTPDNS 拦截**，并阻断 YouTube QUIC UDP 443。
 - **智能空组跳过（JS 模式）**：自动清洗无效/高倍率提示节点（保留 \`10Gbps\`、\`GB\` 节点），并在订阅缺少某地区节点时自动跳过对应分组。
 
 ## 导入 Clash Mi 的覆写订阅链接

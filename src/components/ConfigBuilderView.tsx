@@ -5,13 +5,23 @@ import {
   RotateCcw,
   ChevronDown,
   ChevronUp,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Pin,
 } from 'lucide-react';
 import {
+  AdBlockLevel,
   ClashWorkspaceState,
   ProxyGroupConfig,
   ProxyGroupType,
 } from '../types/clash';
-import { DEFAULT_GLOBAL_EXCLUDE } from '../data/presets';
+import {
+  AD_BLOCK_LEVEL_PRESETS,
+  DEFAULT_GLOBAL_EXCLUDE,
+  inferAdBlockLevel,
+} from '../data/presets';
 
 interface ConfigBuilderViewProps {
   state: ClashWorkspaceState;
@@ -25,7 +35,7 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
   onJumpToSimulator,
 }) => {
   const [activeCustomTab, setActiveCustomTab] = useState<'proxy' | 'direct' | 'reject'>('proxy');
-  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>('grp-select');
 
   const updateGroup = (id: string, patch: Partial<ProxyGroupConfig>) => {
     onChange({
@@ -34,12 +44,66 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
     });
   };
 
+  const moveGroup = (index: number, delta: -1 | 1) => {
+    const target = index + delta;
+    if (target < 0 || target >= state.groups.length) return;
+    const next = [...state.groups];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    onChange({ ...state, groups: next });
+  };
+
+  const pinAutoFirst = () => {
+    const autoIndex = state.groups.findIndex(
+      (g) => g.id === 'grp-auto' || g.type === 'url-test'
+    );
+    if (autoIndex === -1) return;
+    const autoGroup = state.groups[autoIndex];
+    const reordered = [
+      { ...autoGroup, enabled: true },
+      ...state.groups.filter((_, idx) => idx !== autoIndex),
+    ].map((g) => {
+      if (g.id === 'grp-select' && g.proxies.includes(autoGroup.name)) {
+        return {
+          ...g,
+          proxies: [
+            autoGroup.name,
+            ...g.proxies.filter((name) => name !== autoGroup.name),
+          ],
+        };
+      }
+      return g;
+    });
+    onChange({ ...state, groups: reordered });
+  };
+
+  const moveSubProxy = (groupId: string, refIdx: number, action: -1 | 1 | 'top') => {
+    onChange({
+      ...state,
+      groups: state.groups.map((g) => {
+        if (g.id !== groupId) return g;
+        const list = [...g.proxies];
+        if (refIdx < 0 || refIdx >= list.length) return g;
+        if (action === 'top') {
+          const [item] = list.splice(refIdx, 1);
+          list.unshift(item);
+          return { ...g, proxies: list };
+        }
+        const target = refIdx + action;
+        if (target < 0 || target >= list.length) return g;
+        const [item] = list.splice(refIdx, 1);
+        list.splice(target, 0, item);
+        return { ...g, proxies: list };
+      }),
+    });
+  };
+
   const addCustomGroup = () => {
     const newGroup: ProxyGroupConfig = {
       id: `grp-${Date.now()}`,
-      name: '🌍 欧洲节点',
+      name: '🌍 自定义地区节点',
       type: 'url-test',
-      filter: '英|德|法|荷|UK|DE|FR|NL|🇬🇧|🇩🇪|🇫🇷',
+      filter: '新加坡|日本|SG|JP',
       excludeFilter: state.kernel.globalExcludeFilter,
       url: 'https://www.gstatic.com/generate_204',
       interval: 300,
@@ -59,8 +123,54 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
     });
   };
 
+  const applyAdBlockLevel = (level: Exclude<AdBlockLevel, 'custom'>) => {
+    const enabledSet = new Set(AD_BLOCK_LEVEL_PRESETS[level].enabledRuleIds);
+    const nextRuleModules = state.ruleModules.map((mod) =>
+      mod.category === 'reject'
+        ? { ...mod, enabled: enabledSet.has(mod.id) }
+        : mod
+    );
+    onChange({
+      ...state,
+      ruleModules: nextRuleModules,
+      kernel: {
+        ...state.kernel,
+        adBlockLevel: level,
+      },
+    });
+  };
+
+  const toggleRuleModule = (id: string, enabled: boolean) => {
+    const nextRuleModules = state.ruleModules.map((r) =>
+      r.id === id ? { ...r, enabled } : r
+    );
+    const nextLevel = inferAdBlockLevel(nextRuleModules);
+    onChange({
+      ...state,
+      ruleModules: nextRuleModules,
+      kernel: {
+        ...state.kernel,
+        adBlockLevel: nextLevel,
+      },
+    });
+  };
+
+  const enabledGroups = state.groups.filter((g) => g.enabled);
+  const firstEnabledGroup = enabledGroups[0];
+  const isAutoFirst =
+    Boolean(firstEnabledGroup) &&
+    (firstEnabledGroup.id === 'grp-auto' || firstEnabledGroup.type === 'url-test');
+
+  const activeRejectModules = state.ruleModules.filter(
+    (r) => r.category === 'reject' && r.enabled
+  );
+  const totalRejectModules = state.ruleModules.filter(
+    (r) => r.category === 'reject'
+  ).length;
+  const activeAdLevel = state.kernel.adBlockLevel || inferAdBlockLevel(state.ruleModules);
+
   const selectableGroupNames = [
-    ...state.groups.filter((g) => g.enabled).map((g) => g.name),
+    ...enabledGroups.map((g) => g.name),
     'DIRECT',
     'REJECT',
   ];
@@ -211,18 +321,28 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
         </div>
       </section>
 
-      {/* Section 2: 节点正则过滤与策略分组 */}
+      {/* Section 2: 可视化策略分组列表与顺序编排 */}
       <section className="bg-white border border-slate-200 rounded-lg p-6">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
             <h2 className="text-base font-semibold text-slate-900">
-              02. 节点正则过滤与动态策略分组
+              02. 可视化策略分组列表与节点正则过滤
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              通过全局排除正则清洗订阅中的流量/到期提示和高倍率节点，并按地区与业务自动测速归组。
+              列表顺序即 Clash Mi 客户端「代理」页的展示顺序，默认将「♻️ 自动测速优选」放在第 1 位并支持逐组调序。
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {!isAutoFirst && (
+              <button
+                type="button"
+                onClick={pinAutoFirst}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 transition-colors whitespace-nowrap shrink-0"
+              >
+                <Pin className="w-3.5 h-3.5" />
+                将自动选择置顶首位
+              </button>
+            )}
             <button
               type="button"
               onClick={onJumpToSimulator}
@@ -238,6 +358,49 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
               <Plus className="w-3.5 h-3.5" />
               新增地区分组
             </button>
+          </div>
+        </div>
+
+        {/* Visual Group Sequence Bar */}
+        <div className="mt-4 pb-5 border-b border-slate-100">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <span className="text-xs font-medium text-slate-700">
+              Clash Mi 客户端分组显示顺序预览（点击分组可展开子成员排序）
+            </span>
+            <span className="text-xs text-slate-500 font-mono tabular-nums">
+              已启用 {enabledGroups.length} 组 · 首位：{firstEnabledGroup?.name || '-'}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {enabledGroups.map((grp, idx) => {
+              const isSelected = expandedGroupId === grp.id;
+              return (
+                <button
+                  key={grp.id}
+                  type="button"
+                  onClick={() => setExpandedGroupId(isSelected ? null : grp.id)}
+                  className={`text-left px-3 py-2 rounded-md border transition-colors ${
+                    isSelected
+                      ? 'border-blue-600 bg-blue-50/60'
+                      : idx === 0
+                        ? 'border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50'
+                        : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100/70'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono tabular-nums text-[11px] font-semibold text-slate-500">
+                      #{String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <span className="font-mono text-[11px] text-slate-500 truncate">
+                      {grp.type}
+                    </span>
+                  </div>
+                  <div className="text-xs font-medium text-slate-900 truncate mt-0.5">
+                    {grp.name}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -280,20 +443,50 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200 text-xs font-medium text-slate-500">
+                <th className="py-2.5 pr-3 w-20">位置</th>
                 <th className="py-2.5 pr-3 w-10">启用</th>
                 <th className="py-2.5 pr-3">分组名称</th>
                 <th className="py-2.5 pr-3 w-36">调度模式</th>
-                <th className="py-2.5 pr-3">包含正则 (filter)</th>
+                <th className="py-2.5 pr-3">包含正则 / 默认首选子项</th>
                 <th className="py-2.5 pr-3 text-right w-24">容差 (ms)</th>
                 <th className="py-2.5 text-right w-20">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
-              {state.groups.map((grp) => {
+              {state.groups.map((grp, idx) => {
                 const isExpanded = expandedGroupId === grp.id;
                 return (
                   <React.Fragment key={grp.id}>
-                    <tr className="hover:bg-slate-50/70 transition-colors">
+                    <tr
+                      className={`transition-colors ${
+                        isExpanded ? 'bg-blue-50/30' : 'hover:bg-slate-50/70'
+                      }`}
+                    >
+                      <td className="py-2.5 pr-3">
+                        <div className="inline-flex items-center gap-1">
+                          <span className="font-mono tabular-nums text-xs text-slate-500 w-6">
+                            {String(idx + 1).padStart(2, '0')}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => moveGroup(idx, -1)}
+                            className="p-0.5 text-slate-400 hover:text-slate-800 disabled:opacity-25"
+                            title="上移"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === state.groups.length - 1}
+                            onClick={() => moveGroup(idx, 1)}
+                            className="p-0.5 text-slate-400 hover:text-slate-800 disabled:opacity-25"
+                            title="下移"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
                       <td className="py-2.5 pr-3">
                         <input
                           type="checkbox"
@@ -326,7 +519,21 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
                         </select>
                       </td>
                       <td className="py-2.5 pr-3">
-                        {grp.includeAllProxies || grp.filter ? (
+                        {grp.proxies.length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedGroupId(isExpanded ? null : grp.id)}
+                            className="text-left text-xs text-slate-600 hover:text-blue-700 transition-colors"
+                          >
+                            <span>首选：{grp.proxies[0]}</span>
+                            <span className="text-slate-400 mx-1.5" aria-hidden="true">
+                              ·
+                            </span>
+                            <span className="font-mono tabular-nums text-slate-500">
+                              {grp.proxies.length} 项{grp.includeAllProxies ? ' + 全部节点' : ''}
+                            </span>
+                          </button>
+                        ) : (
                           <input
                             type="text"
                             value={grp.filter}
@@ -334,10 +541,6 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
                             placeholder="全部保留（仅执行全局排除）"
                             className="w-full font-mono text-xs bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-slate-700 focus:outline-none focus:border-blue-500"
                           />
-                        ) : (
-                          <span className="text-xs text-slate-400">
-                            引用子策略组 ({grp.proxies.length} 项)
-                          </span>
                         )}
                       </td>
                       <td className="py-2.5 pr-3 text-right">
@@ -362,7 +565,7 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
                             type="button"
                             onClick={() => setExpandedGroupId(isExpanded ? null : grp.id)}
                             className="text-xs text-slate-500 hover:text-slate-900 p-1"
-                            title="展开高级参数"
+                            title="展开高级参数与成员顺序"
                           >
                             {isExpanded ? (
                               <ChevronUp className="w-4 h-4" />
@@ -384,8 +587,65 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
                       </td>
                     </tr>
                     {isExpanded && (
-                      <tr className="bg-slate-50/60">
-                        <td colSpan={6} className="px-4 py-3">
+                      <tr className="bg-slate-50/70">
+                        <td colSpan={7} className="px-4 py-4 space-y-4">
+                          {grp.proxies.length > 0 && (
+                            <div className="pb-3 border-b border-slate-200/80">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-medium text-slate-700">
+                                  组内成员优先顺序（第 1 位为 Clash Mi 默认选中项）
+                                </span>
+                                <span className="text-xs text-slate-500">
+                                  可点击左右调序或直接置顶
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {grp.proxies.map((member, mIdx) => (
+                                  <div
+                                    key={`${grp.id}-${member}`}
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs ${
+                                      mIdx === 0
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-medium'
+                                        : 'bg-white border-slate-200 text-slate-700'
+                                    }`}
+                                  >
+                                    <span className="font-mono tabular-nums text-[11px] text-slate-400">
+                                      {mIdx + 1}
+                                    </span>
+                                    <span className="whitespace-nowrap">{member}</span>
+                                    <button
+                                      type="button"
+                                      disabled={mIdx === 0}
+                                      onClick={() => moveSubProxy(grp.id, mIdx, -1)}
+                                      className="p-0.5 text-slate-400 hover:text-slate-900 disabled:opacity-25"
+                                      title="前移"
+                                    >
+                                      <ArrowLeft className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={mIdx === grp.proxies.length - 1}
+                                      onClick={() => moveSubProxy(grp.id, mIdx, 1)}
+                                      className="p-0.5 text-slate-400 hover:text-slate-900 disabled:opacity-25"
+                                      title="后移"
+                                    >
+                                      <ArrowRight className="w-3 h-3" />
+                                    </button>
+                                    {mIdx > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => moveSubProxy(grp.id, mIdx, 'top')}
+                                        className="text-[11px] text-blue-600 hover:text-blue-800 ml-0.5 whitespace-nowrap"
+                                      >
+                                        置顶
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                             <div>
                               <label className="block font-medium text-slate-600 mb-1">
@@ -452,15 +712,15 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
         </div>
       </section>
 
-      {/* Section 3: 分流规则集与自定义列表 */}
+      {/* Section 3: 分流规则集、设备性能去广告开关与自定义列表 */}
       <section className="bg-white border border-slate-200 rounded-lg p-6">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
             <h2 className="text-base font-semibold text-slate-900">
-              03. 分流规则集与仓库自定义规则
+              03. 分流规则集、设备性能去广告等级与自定义规则
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              选择 Clash Mi 原生支持的规则集格式，并维护独立于上游规则集的个人分流列表。
+              内置 AdGuard 基础、移动端 App 增强与 217heidai 全量去广告规则，支持按手机/路由器性能一键切换拦截等级。
             </p>
           </div>
           <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
@@ -499,62 +759,142 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
           </div>
         </div>
 
+        {/* One-Click Device Performance Ad-Block Switcher */}
+        <div className="mt-4 pb-5 border-b border-slate-100">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <span className="text-xs font-semibold text-slate-800">
+              设备性能去广告拦截等级（一键开关）
+            </span>
+            <span className="text-xs text-slate-500 font-mono tabular-nums">
+              已启用 {activeRejectModules.length} / {totalRejectModules} 个去广告规则集
+              {activeAdLevel === 'custom' ? ' · 当前为手动自定义组合' : ''}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {(['light', 'balanced', 'ultra'] as const).map((levelKey) => {
+              const preset = AD_BLOCK_LEVEL_PRESETS[levelKey];
+              const isActive = activeAdLevel === levelKey;
+              return (
+                <button
+                  key={levelKey}
+                  type="button"
+                  onClick={() => applyAdBlockLevel(levelKey)}
+                  className={`text-left p-3.5 rounded-md border transition-colors ${
+                    isActive
+                      ? 'border-blue-600 bg-blue-50/50'
+                      : 'border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-900">
+                      {preset.title}
+                    </span>
+                    <span className="font-mono tabular-nums text-[11px] text-slate-500">
+                      {preset.enabledRuleIds.length} 组拦截源
+                    </span>
+                  </div>
+                  <div className="text-[11px] font-medium text-blue-700 mt-0.5">
+                    {preset.deviceHint}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                    {preset.summary}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200 text-xs font-medium text-slate-500">
                 <th className="py-2 pr-3 w-10">启用</th>
                 <th className="py-2 pr-3">规则模块</th>
-                <th className="py-2 pr-3">Provider 标识</th>
+                <th className="py-2 pr-3">层级 / Provider</th>
                 <th className="py-2 pr-3">行为类型</th>
                 <th className="py-2 pr-3 w-52">目标策略组</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
-              {state.ruleModules.map((mod) => (
-                <tr key={mod.id} className="hover:bg-slate-50/70">
-                  <td className="py-2.5 pr-3">
-                    <input
-                      type="checkbox"
-                      checked={mod.enabled}
-                      onChange={(e) =>
-                        onChange({
-                          ...state,
-                          ruleModules: state.ruleModules.map((r) =>
-                            r.id === mod.id ? { ...r, enabled: e.target.checked } : r
-                          ),
-                        })
-                      }
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600"
-                    />
-                  </td>
-                  <td className="py-2.5 pr-3 font-medium text-slate-900">{mod.label}</td>
-                  <td className="py-2.5 pr-3 font-mono text-xs text-slate-500">
-                    {mod.providerName}
-                  </td>
-                  <td className="py-2.5 pr-3 font-mono text-xs text-slate-500">{mod.behavior}</td>
-                  <td className="py-2.5 pr-3">
-                    <select
-                      value={mod.targetGroup}
-                      onChange={(e) =>
-                        onChange({
-                          ...state,
-                          ruleModules: state.ruleModules.map((r) =>
-                            r.id === mod.id ? { ...r, targetGroup: e.target.value } : r
-                          ),
-                        })
-                      }
-                      className="w-full text-xs bg-white border border-slate-200 rounded px-2.5 py-1.5 text-slate-800 focus:outline-none focus:border-blue-500"
-                    >
-                      {selectableGroupNames.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
+              {state.ruleModules.map((mod) => {
+                const isMrsMode = state.kernel.ruleSourceFlavor === 'metacubex-mrs';
+                const chosenUrl = isMrsMode ? mod.mrsUrl : mod.yamlUrl;
+                const fmt = chosenUrl.endsWith('.mrs')
+                  ? 'mrs'
+                  : chosenUrl.endsWith('.txt')
+                    ? 'text'
+                    : 'yaml';
+                const effectiveBehavior = isMrsMode
+                  ? mod.mrsBehavior || (fmt === 'mrs' && mod.behavior === 'classical' ? 'domain' : mod.behavior)
+                  : mod.behavior;
+                const tierText =
+                  mod.tier === 'light'
+                    ? '轻量必备'
+                    : mod.tier === 'balanced'
+                      ? '均衡增强'
+                      : mod.tier === 'ultra'
+                        ? '强力满血'
+                        : null;
+
+                return (
+                  <tr key={mod.id} className="hover:bg-slate-50/70">
+                    <td className="py-2.5 pr-3">
+                      <input
+                        type="checkbox"
+                        checked={mod.enabled}
+                        onChange={(e) => toggleRuleModule(mod.id, e.target.checked)}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                      />
+                    </td>
+                    <td className="py-2.5 pr-3 font-medium text-slate-900">{mod.label}</td>
+                    <td className="py-2.5 pr-3 text-xs text-slate-500">
+                      <span className="font-mono">{mod.providerName}</span>
+                      {tierText && (
+                        <>
+                          <span className="mx-1.5 text-slate-300" aria-hidden="true">
+                            ·
+                          </span>
+                          <span
+                            className={
+                              mod.tier === 'ultra'
+                                ? 'text-amber-700 font-medium'
+                                : mod.tier === 'balanced'
+                                  ? 'text-blue-700 font-medium'
+                                  : 'text-emerald-700 font-medium'
+                            }
+                          >
+                            {tierText}
+                          </span>
+                        </>
+                      )}
+                    </td>
+                    <td className="py-2.5 pr-3 font-mono text-xs text-slate-500">
+                      {effectiveBehavior} · {fmt}
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      <select
+                        value={mod.targetGroup}
+                        onChange={(e) =>
+                          onChange({
+                            ...state,
+                            ruleModules: state.ruleModules.map((r) =>
+                              r.id === mod.id ? { ...r, targetGroup: e.target.value } : r
+                            ),
+                          })
+                        }
+                        className="w-full text-xs bg-white border border-slate-200 rounded px-2.5 py-1.5 text-slate-800 focus:outline-none focus:border-blue-500"
+                      >
+                        {selectableGroupNames.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

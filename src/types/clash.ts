@@ -26,12 +26,16 @@ export interface ProxyGroupConfig {
 
 export type RuleSourceFlavor = 'metacubex-mrs' | 'loyalsoldier-yaml';
 
+export type AdBlockLevel = 'light' | 'balanced' | 'ultra' | 'custom';
+
 export interface RuleModuleConfig {
   id: string;
   label: string;
   category: 'reject' | 'ai' | 'streaming' | 'dev' | 'social' | 'service' | 'direct';
   providerName: string;
   behavior: 'domain' | 'ipcidr' | 'classical';
+  mrsBehavior?: 'domain' | 'ipcidr' | 'classical';
+  tier?: 'light' | 'balanced' | 'ultra';
   mrsUrl: string;
   yamlUrl: string;
   targetGroup: string;
@@ -47,6 +51,7 @@ export interface KernelSettings {
   dohChina: string;
   dohGlobal: string;
   ruleSourceFlavor: RuleSourceFlavor;
+  adBlockLevel: AdBlockLevel;
   globalExcludeFilter: string;
 }
 

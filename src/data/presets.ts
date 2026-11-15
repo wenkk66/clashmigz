@@ -1,7 +1,68 @@
-import { ClashWorkspaceState } from '../types/clash';
+import { AdBlockLevel, ClashWorkspaceState } from '../types/clash';
 
 export const DEFAULT_GLOBAL_EXCLUDE =
   '剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国';
+
+export const AD_BLOCK_LEVEL_PRESETS: Record<
+  Exclude<AdBlockLevel, 'custom'>,
+  {
+    title: string;
+    deviceHint: string;
+    summary: string;
+    enabledRuleIds: string[];
+  }
+> = {
+  light: {
+    title: '轻量省内存',
+    deviceHint: '老旧安卓机 / 低内存路由器 (≤2GB RAM)',
+    summary: '仅启用 3 个高频二进制 .mrs 规则（HTTPDNS + 秋风广告 + MetaCubeX），极低内存占用。',
+    enabledRuleIds: ['rule-httpdns', 'rule-awavenue', 'rule-ads'],
+  },
+  balanced: {
+    title: '均衡推荐',
+    deviceHint: '主流安卓手机 / 日常平板（默认推荐）',
+    summary: '在轻量基础上叠加 AdGuard 基础规则（SDNS）与移动端 App 广告增强，兼顾拦截率与流畅度。',
+    enabledRuleIds: [
+      'rule-httpdns',
+      'rule-awavenue',
+      'rule-ads',
+      'rule-adguard-base',
+      'rule-mobile-ad-enhance',
+    ],
+  },
+  ultra: {
+    title: '强力满血',
+    deviceHint: '旗舰手机 / 电脑 / 软路由（高性能设备）',
+    summary: '全量激活 217heidai AdGuard+EasyList 10万+ .mrs 合并库与 anti-AD，实现最高级别去广告覆盖。',
+    enabledRuleIds: [
+      'rule-httpdns',
+      'rule-awavenue',
+      'rule-ads',
+      'rule-adguard-base',
+      'rule-mobile-ad-enhance',
+      'rule-adblock-ultra',
+      'rule-antiad',
+    ],
+  },
+};
+
+export function inferAdBlockLevel(
+  ruleModules: ClashWorkspaceState['ruleModules']
+): AdBlockLevel {
+  const activeRejectIds = ruleModules
+    .filter((r) => r.category === 'reject' && r.enabled)
+    .map((r) => r.id)
+    .sort()
+    .join(',');
+
+  for (const level of ['light', 'balanced', 'ultra'] as const) {
+    const targetIds = [...AD_BLOCK_LEVEL_PRESETS[level].enabledRuleIds].sort().join(',');
+    if (activeRejectIds === targetIds) {
+      return level;
+    }
+  }
+  return 'custom';
+}
 
 export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
   overwrite: {
@@ -12,6 +73,21 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
     overwriteSniffer: true,
   },
   groups: [
+    {
+      id: 'grp-auto',
+      name: '♻️ 自动测速优选',
+      type: 'url-test',
+      filter: '',
+      excludeFilter: DEFAULT_GLOBAL_EXCLUDE,
+      url: 'https://www.gstatic.com/generate_204',
+      interval: 300,
+      tolerance: 50,
+      strategy: 'consistent-hashing',
+      includeAllProxies: true,
+      proxies: [],
+      enabled: true,
+      isSystem: true,
+    },
     {
       id: 'grp-select',
       name: '🚀 节点选择',
@@ -39,34 +115,6 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       ],
       enabled: true,
       isSystem: true,
-    },
-    {
-      id: 'grp-manual',
-      name: '🎯 手动节点列表',
-      type: 'select',
-      filter: '',
-      excludeFilter: DEFAULT_GLOBAL_EXCLUDE,
-      url: '',
-      interval: 300,
-      tolerance: 50,
-      strategy: 'consistent-hashing',
-      includeAllProxies: true,
-      proxies: [],
-      enabled: true,
-    },
-    {
-      id: 'grp-auto',
-      name: '♻️ 自动测速优选',
-      type: 'url-test',
-      filter: '',
-      excludeFilter: DEFAULT_GLOBAL_EXCLUDE,
-      url: 'https://www.gstatic.com/generate_204',
-      interval: 300,
-      tolerance: 50,
-      strategy: 'consistent-hashing',
-      includeAllProxies: true,
-      proxies: [],
-      enabled: true,
     },
     {
       id: 'grp-failover',
@@ -97,17 +145,17 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       enabled: true,
     },
     {
-      id: 'grp-ads',
-      name: '🛡️ 广告拦截',
+      id: 'grp-manual',
+      name: '🎯 手动节点列表',
       type: 'select',
       filter: '',
-      excludeFilter: '',
+      excludeFilter: DEFAULT_GLOBAL_EXCLUDE,
       url: '',
       interval: 300,
       tolerance: 50,
       strategy: 'consistent-hashing',
-      includeAllProxies: false,
-      proxies: ['REJECT', 'REJECT-DROP', 'DIRECT'],
+      includeAllProxies: true,
+      proxies: [],
       enabled: true,
     },
     {
@@ -122,13 +170,14 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       strategy: 'consistent-hashing',
       includeAllProxies: false,
       proxies: [
+        '♻️ 自动测速优选',
         '🇭🇰 香港节点',
         '🇹🇼 台湾节点',
         '🇸🇬 狮城节点',
         '🇯🇵 日本节点',
         '🇺🇸 美国节点',
+        '🎯 手动节点列表',
         '🚀 节点选择',
-        '♻️ 自动测速优选',
       ],
       enabled: true,
     },
@@ -143,7 +192,7 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       tolerance: 50,
       strategy: 'consistent-hashing',
       includeAllProxies: false,
-      proxies: ['🇸🇬 狮城节点', '🇺🇸 美国节点', '🇯🇵 日本节点', '🇹🇼 台湾节点'],
+      proxies: ['🇸🇬 狮城节点', '🇺🇸 美国节点', '🇯🇵 日本节点', '🇹🇼 台湾节点', '🎯 手动节点列表'],
       enabled: true,
     },
     {
@@ -172,6 +221,7 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       strategy: 'consistent-hashing',
       includeAllProxies: false,
       proxies: [
+        '♻️ 自动测速优选',
         '🚀 节点选择',
         '🚨 故障转移',
         '🇭🇰 香港节点',
@@ -193,7 +243,15 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       tolerance: 50,
       strategy: 'consistent-hashing',
       includeAllProxies: false,
-      proxies: ['🚀 节点选择', '🚨 故障转移', '🇸🇬 狮城节点', '🇭🇰 香港节点', '🇯🇵 日本节点', '🇺🇸 美国节点'],
+      proxies: [
+        '♻️ 自动测速优选',
+        '🚀 节点选择',
+        '🚨 故障转移',
+        '🇸🇬 狮城节点',
+        '🇭🇰 香港节点',
+        '🇯🇵 日本节点',
+        '🇺🇸 美国节点',
+      ],
       enabled: true,
     },
     {
@@ -207,7 +265,21 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       tolerance: 50,
       strategy: 'consistent-hashing',
       includeAllProxies: false,
-      proxies: ['DIRECT', '🚀 节点选择', '🇭🇰 香港节点', '🇯🇵 日本节点', '🇺🇸 美国节点'],
+      proxies: ['DIRECT', '♻️ 自动测速优选', '🚀 节点选择', '🇭🇰 香港节点', '🇯🇵 日本节点', '🇺🇸 美国节点'],
+      enabled: true,
+    },
+    {
+      id: 'grp-ads',
+      name: '🛡️ 广告拦截',
+      type: 'select',
+      filter: '',
+      excludeFilter: '',
+      url: '',
+      interval: 300,
+      tolerance: 50,
+      strategy: 'consistent-hashing',
+      includeAllProxies: false,
+      proxies: ['REJECT', 'REJECT-DROP', 'DIRECT'],
       enabled: true,
     },
     {
@@ -319,7 +391,7 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       tolerance: 50,
       strategy: 'consistent-hashing',
       includeAllProxies: false,
-      proxies: ['🚀 节点选择', '♻️ 自动测速优选', '🚨 故障转移', 'DIRECT'],
+      proxies: ['♻️ 自动测速优选', '🚀 节点选择', '🚨 故障转移', 'DIRECT'],
       enabled: true,
       isSystem: true,
     },
@@ -340,8 +412,9 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
     },
     {
       id: 'rule-httpdns',
-      label: 'HTTPDNS 劫持屏蔽 (防国内 App 绕过广告过滤)',
+      label: 'HTTPDNS 劫持屏蔽（防国内 App 绕过广告过滤）',
       category: 'reject',
+      tier: 'light',
       providerName: 'category-httpdns-cn',
       behavior: 'domain',
       mrsUrl: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-httpdns-cn.mrs',
@@ -353,34 +426,24 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
     },
     {
       id: 'rule-awavenue',
-      label: '秋风广告规则 (AWAvenue Ads 移动端强效去广告)',
+      label: '秋风广告规则（AWAvenue Ads 移动端原生 .mrs）',
       category: 'reject',
+      tier: 'light',
       providerName: 'awavenue-ads',
       behavior: 'classical',
-      mrsUrl: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/refs/heads/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml',
-      yamlUrl: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/refs/heads/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml',
+      mrsBehavior: 'domain',
+      mrsUrl: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs',
+      yamlUrl: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml',
       targetGroup: '🛡️ 广告拦截',
       interval: 86400,
       enabled: true,
       sampleDomains: ['ad.doubleclick.net', 'ads.youtube.com', 'pangolin.snssdk.com'],
     },
     {
-      id: 'rule-antiad',
-      label: 'anti-AD 广告与隐私追踪过滤',
-      category: 'reject',
-      providerName: 'anti-ad',
-      behavior: 'domain',
-      mrsUrl: 'https://anti-ad.net/clash.yaml',
-      yamlUrl: 'https://anti-ad.net/clash.yaml',
-      targetGroup: '🛡️ 广告拦截',
-      interval: 86400,
-      enabled: true,
-      sampleDomains: ['googleads.g.doubleclick.net', 'pagead2.googlesyndication.com'],
-    },
-    {
       id: 'rule-ads',
-      label: 'MetaCubeX 全网广告与遥测聚合 (AdGuard / EasyList)',
+      label: 'MetaCubeX 全网广告与遥测聚合（EasyList 底座）',
       category: 'reject',
+      tier: 'light',
       providerName: 'category-ads-all',
       behavior: 'domain',
       mrsUrl: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ads-all.mrs',
@@ -388,7 +451,66 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       targetGroup: '🛡️ 广告拦截',
       interval: 86400,
       enabled: true,
-      sampleDomains: ['doubleclick.net', 'googlesyndication.com', 'adservice.google.com', 'umeng.com'],
+      sampleDomains: ['doubleclick.net', 'googlesyndication.com', 'umeng.com'],
+    },
+    {
+      id: 'rule-adguard-base',
+      label: 'AdGuard 基础拦截规则（AdGuard SDNS Filter）',
+      category: 'reject',
+      tier: 'balanced',
+      providerName: 'adguard-base',
+      behavior: 'domain',
+      mrsBehavior: 'domain',
+      mrsUrl: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdGuardSDNSFilter/AdGuardSDNSFilter_Domain.yaml',
+      yamlUrl: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdGuardSDNSFilter/AdGuardSDNSFilter_Domain.yaml',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: true,
+      sampleDomains: ['adservice.google.com', 'analytics.google.com', 's0.2mdn.net'],
+    },
+    {
+      id: 'rule-mobile-ad-enhance',
+      label: '移动端 App 广告增强（blackmatrix7 Advertising）',
+      category: 'reject',
+      tier: 'balanced',
+      providerName: 'mobile-ad-enhance',
+      behavior: 'classical',
+      mrsBehavior: 'domain',
+      mrsUrl: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising_Domain.yaml',
+      yamlUrl: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising.yaml',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: true,
+      sampleDomains: ['adx.gdt.qq.com', 'mobads.baidu.com', 'ads-api.tiktok.com'],
+    },
+    {
+      id: 'rule-adblock-ultra',
+      label: 'AdGuard + EasyList 强力全量库（217heidai .mrs）',
+      category: 'reject',
+      tier: 'ultra',
+      providerName: 'adblock-ultra',
+      behavior: 'domain',
+      mrsBehavior: 'domain',
+      mrsUrl: 'https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.mrs',
+      yamlUrl: 'https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: false,
+      sampleDomains: ['pagead2.googlesyndication.com', 'tpc.googlesyndication.com'],
+    },
+    {
+      id: 'rule-antiad',
+      label: 'anti-AD 深度广告与隐私追踪库（高性能设备推荐）',
+      category: 'reject',
+      tier: 'ultra',
+      providerName: 'anti-ad',
+      behavior: 'domain',
+      mrsUrl: 'https://anti-ad.net/clash.yaml',
+      yamlUrl: 'https://anti-ad.net/clash.yaml',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: false,
+      sampleDomains: ['googleads.g.doubleclick.net', 'log.mmstat.com'],
     },
     {
       id: 'rule-ai-all',
@@ -607,6 +729,7 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
     dohChina: 'https://dns.alidns.com/dns-query',
     dohGlobal: 'https://1.1.1.1/dns-query',
     ruleSourceFlavor: 'metacubex-mrs',
+    adBlockLevel: 'balanced',
     globalExcludeFilter: DEFAULT_GLOBAL_EXCLUDE,
   },
   github: {
