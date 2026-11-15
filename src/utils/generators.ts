@@ -97,12 +97,18 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
   const isMrs = kernel.ruleSourceFlavor === 'metacubex-mrs';
 
   for (const mod of enabledRules) {
-    const ext = isMrs ? 'mrs' : mod.yamlUrl.endsWith('.txt') ? 'txt' : 'yaml';
+    const chosenUrl = isMrs ? mod.mrsUrl : mod.yamlUrl;
+    const fmt = chosenUrl.endsWith('.mrs')
+      ? 'mrs'
+      : chosenUrl.endsWith('.txt')
+        ? 'text'
+        : 'yaml';
+    const ext = fmt === 'text' ? 'txt' : fmt;
     ruleProvidersObj[mod.providerName] = {
       type: 'http',
       behavior: mod.behavior,
-      format: isMrs ? 'mrs' : mod.yamlUrl.endsWith('.txt') ? 'text' : 'yaml',
-      url: isMrs ? mod.mrsUrl : mod.yamlUrl,
+      format: fmt,
+      url: chosenUrl,
       path: `./rule_providers/${mod.providerName}.${ext}`,
       interval: mod.interval,
     };
@@ -113,6 +119,12 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
     ...parseCustomRuleLines(customRules.directList, 'DIRECT'),
     ...parseCustomRuleLines(customRules.proxyList, primarySelectName),
   ];
+
+  const youtubeEnabled = enabledRules.some((r) => r.providerName === 'youtube');
+  if (youtubeEnabled) {
+    // 拦截 YouTube QUIC (UDP 443)，强制走 TCP 提升稳定性与分流/广告域名嗅探命中率
+    rulesList.push(`AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),${adsGroupName}`);
+  }
 
   for (const mod of enabledRules) {
     const resolvedTarget =
@@ -148,6 +160,23 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
   }
 
   if (overwrite.overwriteDns) {
+    const enabledProviderSet = new Set(enabledRules.map((r) => r.providerName));
+    const fakeIpRuleSets = ['private', 'cn-domain']
+      .filter((name) => enabledProviderSet.has(name))
+      .map((name) => `RULE-SET:${name}`);
+    const chinaPolicyRuleSets = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter((name) =>
+      enabledProviderSet.has(name)
+    );
+    const nameserverPolicy: Record<string, string[]> = {
+      'geosite:cn,private': [kernel.dohChina || 'https://dns.alidns.com/dns-query'],
+      'geosite:geolocation-!cn': [kernel.dohGlobal || 'https://1.1.1.1/dns-query'],
+    };
+    if (chinaPolicyRuleSets.length > 0) {
+      nameserverPolicy[`RULE-SET:${chinaPolicyRuleSets.join(',')}`] = [
+        kernel.dohChina || 'https://dns.alidns.com/dns-query',
+      ];
+    }
+
     config['dns!'] = {
       enable: true,
       ipv6: kernel.ipv6,
@@ -160,20 +189,13 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
         'localhost.ptlogin2.qq.com',
         '+.msftconnecttest.com',
         '+.msftncsi.com',
-        'RULE-SET:private',
-        'RULE-SET:cn-domain',
+        ...fakeIpRuleSets,
       ],
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
       'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', kernel.dohChina || 'https://dns.alidns.com/dns-query'],
       'direct-nameserver': [kernel.dohChina || 'https://dns.alidns.com/dns-query'],
       nameserver: [kernel.dohGlobal || 'https://1.1.1.1/dns-query'],
-      'nameserver-policy': {
-        'RULE-SET:private,cn-domain,apple-cn,microsoft-cn': [
-          kernel.dohChina || 'https://dns.alidns.com/dns-query',
-        ],
-        'geosite:cn,private': [kernel.dohChina || 'https://dns.alidns.com/dns-query'],
-        'geosite:geolocation-!cn': [kernel.dohGlobal || 'https://1.1.1.1/dns-query'],
-      },
+      'nameserver-policy': nameserverPolicy,
     };
   }
 
@@ -223,12 +245,18 @@ export function generateOverwriteJsString(state: ClashWorkspaceState): string {
   const enabledRules = ruleModules.filter((r) => r.enabled);
 
   for (const mod of enabledRules) {
-    const ext = isMrs ? 'mrs' : mod.yamlUrl.endsWith('.txt') ? 'txt' : 'yaml';
+    const chosenUrl = isMrs ? mod.mrsUrl : mod.yamlUrl;
+    const fmt = chosenUrl.endsWith('.mrs')
+      ? 'mrs'
+      : chosenUrl.endsWith('.txt')
+        ? 'text'
+        : 'yaml';
+    const ext = fmt === 'text' ? 'txt' : fmt;
     ruleProvidersObj[mod.providerName] = {
       type: 'http',
       behavior: mod.behavior,
-      format: isMrs ? 'mrs' : mod.yamlUrl.endsWith('.txt') ? 'text' : 'yaml',
-      url: isMrs ? mod.mrsUrl : mod.yamlUrl,
+      format: fmt,
+      url: chosenUrl,
       path: `./rule_providers/${mod.providerName}.${ext}`,
       interval: mod.interval,
     };
@@ -239,6 +267,11 @@ export function generateOverwriteJsString(state: ClashWorkspaceState): string {
     ...parseCustomRuleLines(customRules.directList, 'DIRECT'),
     ...parseCustomRuleLines(customRules.proxyList, primarySelectName),
   ];
+
+  const youtubeEnabled = enabledRules.some((r) => r.providerName === 'youtube');
+  if (youtubeEnabled) {
+    rulesList.push(`AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),${adsGroupName}`);
+  }
 
   for (const mod of enabledRules) {
     const resolvedTarget =
@@ -330,7 +363,10 @@ function main(config) {
     })
     .filter(Boolean);
 
-  // 2. 动态匹配每个节点策略组（支持 url-test 自动选择、fallback 故障转移、load-balance 均衡，自动跳过空地区组）
+  // 2. 动态匹配每个节点策略组（支持 inline proxies 与 proxy-providers，确保节点列表完整可见）
+  var hasProviders = Boolean(
+    config['proxy-providers'] && Object.keys(config['proxy-providers']).length > 0
+  );
   var activeGroupNames = { DIRECT: true, REJECT: true, 'REJECT-DROP': true };
   var builtGroups = [];
 
@@ -345,16 +381,28 @@ function main(config) {
         return true;
       });
 
-      if (SKIP_EMPTY_REGION_GROUPS && matchedNames.length === 0) {
+      // 若使用 inline proxies 且当前地区无节点，自动跳过该地区组（保留含子策略组的主选择组）
+      var hasSubProxies = Array.isArray(spec.proxies) && spec.proxies.length > 0;
+      if (!hasProviders && SKIP_EMPTY_REGION_GROUPS && matchedNames.length === 0 && !hasSubProxies) {
         continue;
       }
 
       var grpObj = {
         name: spec.name,
         type: spec.type,
-        proxies: matchedNames.length > 0 ? matchedNames : ['DIRECT'],
-        _isNodeGroup: true,
+        _isNodeGroup: !hasSubProxies,
+        _subRefs: hasSubProxies ? spec.proxies : [],
+        _matchedNodes: matchedNames,
       };
+      if (allProxyNames.length === 0 && hasProviders) {
+        grpObj['include-all'] = true;
+        if (spec.filter) grpObj.filter = spec.filter;
+        if (spec.excludeFilter || GLOBAL_EXCLUDE) {
+          grpObj['exclude-filter'] = spec.excludeFilter || GLOBAL_EXCLUDE;
+        }
+      } else {
+        grpObj.proxies = matchedNames.length > 0 ? matchedNames : ['DIRECT'];
+      }
       if (spec.type === 'url-test' || spec.type === 'fallback') {
         grpObj.url = spec.url || 'https://www.gstatic.com/generate_204';
         grpObj.interval = spec.interval || 300;
@@ -374,31 +422,45 @@ function main(config) {
         type: spec.type,
         proxies: spec.proxies,
         _isNodeGroup: false,
+        _subRefs: spec.proxies || [],
+        _matchedNodes: [],
       });
       activeGroupNames[spec.name] = true;
     }
   }
 
-  // 3. 清理聚合选择组中已被跳过的空地区引用
+  // 3. 清理聚合选择组中已被跳过的空地区引用，并把节点列表合并到 🚀 节点选择 底部
   config['proxy-groups'] = builtGroups.map(function (grp) {
     var isNodeGroup = grp._isNodeGroup;
+    var subRefs = grp._subRefs || [];
+    var matchedNodes = grp._matchedNodes || [];
     delete grp._isNodeGroup;
+    delete grp._subRefs;
+    delete grp._matchedNodes;
+
     if (isNodeGroup) {
       return grp;
     }
-    var validRefs = (grp.proxies || []).filter(function (ref) {
+    var validRefs = subRefs.filter(function (ref) {
       return Boolean(activeGroupNames[ref]) || allProxyNames.indexOf(ref) !== -1;
     });
-    return {
+    var merged = validRefs.concat(matchedNodes);
+    var out = {
       name: grp.name,
       type: grp.type,
-      proxies:
-        validRefs.length > 0
-          ? validRefs
-          : allProxyNames.length > 0
-            ? allProxyNames.slice(0, 5)
-            : ['DIRECT'],
     };
+    if (grp['include-all']) {
+      out['include-all'] = true;
+      if (grp.filter) out.filter = grp.filter;
+      if (grp['exclude-filter']) out['exclude-filter'] = grp['exclude-filter'];
+    }
+    out.proxies =
+      merged.length > 0
+        ? merged
+        : allProxyNames.length > 0
+          ? allProxyNames
+          : ['DIRECT'];
+    return out;
   });
 
   // 4. 注入 rule-providers 与分流规则
@@ -420,30 +482,39 @@ function main(config) {
   }
 
   if (OVERWRITE_DNS) {
+    var fakeIpFilterList = [
+      '+.lan',
+      '+.local',
+      'localhost.ptlogin2.qq.com',
+      '+.msftconnecttest.com',
+      '+.msftncsi.com',
+    ];
+    if (RULE_PROVIDERS['private']) fakeIpFilterList.push('RULE-SET:private');
+    if (RULE_PROVIDERS['cn-domain']) fakeIpFilterList.push('RULE-SET:cn-domain');
+
+    var chinaPolicyProviders = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter(function (k) {
+      return Boolean(RULE_PROVIDERS[k]);
+    });
+    var dnsPolicy = {
+      'geosite:cn,private': [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
+      'geosite:geolocation-!cn': [${JSON.stringify(kernel.dohGlobal || 'https://1.1.1.1/dns-query')}],
+    };
+    if (chinaPolicyProviders.length > 0) {
+      dnsPolicy['RULE-SET:' + chinaPolicyProviders.join(',')] = [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}];
+    }
+
     config.dns = {
       enable: true,
       ipv6: ${JSON.stringify(kernel.ipv6)},
       'respect-rules': true,
       'enhanced-mode': ${JSON.stringify(kernel.dnsMode)},
       'fake-ip-range': '198.18.0.1/16',
-      'fake-ip-filter': [
-        '+.lan',
-        '+.local',
-        'localhost.ptlogin2.qq.com',
-        '+.msftconnecttest.com',
-        '+.msftncsi.com',
-        'RULE-SET:private',
-        'RULE-SET:cn-domain',
-      ],
+      'fake-ip-filter': fakeIpFilterList,
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
       'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', ${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
       'direct-nameserver': [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
       nameserver: [${JSON.stringify(kernel.dohGlobal || 'https://1.1.1.1/dns-query')}],
-      'nameserver-policy': {
-        'RULE-SET:private,cn-domain,apple-cn,microsoft-cn': [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
-        'geosite:cn,private': [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
-        'geosite:geolocation-!cn': [${JSON.stringify(kernel.dohGlobal || 'https://1.1.1.1/dns-query')}],
-      },
+      'nameserver-policy': dnsPolicy,
     };
   }
 
@@ -583,7 +654,11 @@ function main() {
     const rulesKey = Object.prototype.hasOwnProperty.call(parsed, 'rules!') ? 'rules!' : 'rules';
     const currentRules = parsed[rulesKey] || [];
     const staticRules = currentRules.filter(
-      (r) => r.startsWith('RULE-SET,') || r.startsWith('GEOIP,') || r.startsWith('MATCH,')
+      (r) =>
+        r.startsWith('AND,') ||
+        r.startsWith('RULE-SET,') ||
+        r.startsWith('GEOIP,') ||
+        r.startsWith('MATCH,')
     );
     const nextRules = [...customMerged, ...staticRules];
     yamlRulesCount = nextRules.length;
@@ -614,7 +689,11 @@ function main() {
     if (match) {
       const existingRules = JSON.parse(match[1]);
       const staticRules = existingRules.filter(
-        (r) => r.startsWith('RULE-SET,') || r.startsWith('GEOIP,') || r.startsWith('MATCH,')
+        (r) =>
+          r.startsWith('AND,') ||
+          r.startsWith('RULE-SET,') ||
+          r.startsWith('GEOIP,') ||
+          r.startsWith('MATCH,')
       );
       const nextRules = [...customMerged, ...staticRules];
       if (JSON.stringify(existingRules) !== JSON.stringify(nextRules)) {
@@ -623,21 +702,26 @@ function main() {
       }
     }
 
-    // 使用沙箱执行 main() 干跑验证：验证清洗节点、自动选择、故障转移、空组剔除与去广告规则
+    // 使用沙箱执行 main() 干跑验证：验证清洗节点、节点列表可见性、自动选择、故障转移、空组剔除与去广告规则
     const sandbox = {};
     vm.createContext(sandbox);
     vm.runInContext(jsContent, sandbox);
     const dryRun = sandbox.main({
       proxies: [
-        { name: '🇭🇰 香港 01', type: 'ss', server: '1.1.1.1', port: 443 },
+        { name: '🇭🇰 香港 01 [10Gbps]', type: 'ss', server: '1.1.1.1', port: 443 },
         { name: '🇯🇵 日本 01', type: 'vmess', server: '2.2.2.2', port: 443 },
         { name: '🇺🇸 美国 01', type: 'trojan', server: '3.3.3.3', port: 443 },
+        { name: '🇬🇧 英国 GB 01', type: 'ss', server: '4.4.4.4', port: 443 },
         { name: '剩余流量：500 GB', type: 'ss', server: '127.0.0.1', port: 80 },
       ],
     });
     const hasFailover = dryRun['proxy-groups'].some((g) => g.type === 'fallback');
     const hasUrlTest = dryRun['proxy-groups'].some((g) => g.type === 'url-test');
-    jsStatus = \`通过 (\${dryRun['proxy-groups'].length} 组 / \${dryRun.rules.length} 规则 / 自动测速:\${hasUrlTest} / 故障转移:\${hasFailover})\`;
+    const selectGroup = dryRun['proxy-groups'].find((g) => g.name.includes('节点选择'));
+    const hasDirectNodesInSelect = Boolean(
+      selectGroup && selectGroup.proxies.some((p) => p.includes('10Gbps')) && selectGroup.proxies.some((p) => p.includes('GB'))
+    );
+    jsStatus = \`通过 (\${dryRun['proxy-groups'].length} 组 / \${dryRun.rules.length} 规则 / 自动测速:\${hasUrlTest} / 故障转移:\${hasFailover} / 节点列表可见:\${hasDirectNodesInSelect})\`;
   }
 
   const report = [
@@ -691,11 +775,12 @@ export function generateReadmeMd(state: ClashWorkspaceState): string {
 
 ## 内置核心能力
 
+- **完整节点列表可见**：主组 \`🚀 节点选择\` 同时保留地区分组与全部清洗后单节点，另附独立 \`🎯 手动节点列表\`，兼容 \`proxies\` 与 \`proxy-providers\` 订阅。
 - **自动测速选择 (\`url-test\`)**：全节点自动优选与各地区（港/台/日/狮城/美/韩/欧）内部 50ms 容差自动切最优节点。
 - **自动故障转移 (\`fallback\`)**：每 180 秒探测可用性，当前节点失联时自动无缝切换至下一个可用节点。
 - **负载均衡 (\`load-balance\`)**：基于 \`consistent-hashing\` 会话保持的并发分流。
-- **全网去广告与防绕过**：集成 \`category-ads-all\`、\`category-httpdns-cn\`（拦截 App HTTPDNS 防绕过）与自定义拦截列表，支持面板随时切换 \`REJECT / REJECT-DROP / DIRECT\`。
-- **智能空组跳过（JS 模式）**：自动清洗无效/高倍率提示节点，并在订阅缺少某地区节点时自动跳过对应分组，兼容任意大小机场。
+- **多引擎去广告与 YouTube 优化**：集成 **AWAvenue-Ads（秋风广告规则）**、**anti-AD**、**MetaCubeX category-ads-all** 与 **HTTPDNS 拦截**，内置 \`AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube))\` 阻断 YouTube QUIC 强制走 TCP 嗅探，并提供 \`📺 YouTube 专属\` 分组。
+- **智能空组跳过（JS 模式）**：自动清洗无效/高倍率提示节点（保留 \`10Gbps\`、\`GB\` 节点），并在订阅缺少某地区节点时自动跳过对应分组。
 
 ## 导入 Clash Mi 的覆写订阅链接
 

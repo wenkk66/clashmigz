@@ -5,7 +5,7 @@
  * 用法: 在 Clash Mi「覆写」页添加此脚本 Raw URL，任意机场订阅均可自动套用。
  */
 
-const GLOBAL_EXCLUDE = "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国";
+const GLOBAL_EXCLUDE = "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国";
 const STRIP_EXCLUDED_PROXIES = true;
 const SKIP_EMPTY_REGION_GROUPS = true;
 const OVERWRITE_DNS = true;
@@ -17,16 +17,17 @@ const GROUP_SPECS = [
     "name": "🚀 节点选择",
     "type": "select",
     "filter": "",
-    "excludeFilter": "",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "",
     "interval": 300,
     "tolerance": 50,
     "strategy": "consistent-hashing",
-    "includeAllProxies": false,
+    "includeAllProxies": true,
     "proxies": [
       "♻️ 自动测速优选",
       "🚨 故障转移",
       "⚖️ 负载均衡",
+      "🎯 手动节点列表",
       "🇭🇰 香港节点",
       "🇹🇼 台湾节点",
       "🇯🇵 日本节点",
@@ -38,11 +39,24 @@ const GROUP_SPECS = [
     ]
   },
   {
+    "id": "grp-manual",
+    "name": "🎯 手动节点列表",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": true,
+    "proxies": []
+  },
+  {
     "id": "grp-auto",
     "name": "♻️ 自动测速优选",
     "type": "url-test",
     "filter": "",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 50,
@@ -55,7 +69,7 @@ const GROUP_SPECS = [
     "name": "🚨 故障转移",
     "type": "fallback",
     "filter": "",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 180,
     "tolerance": 50,
@@ -68,7 +82,7 @@ const GROUP_SPECS = [
     "name": "⚖️ 负载均衡",
     "type": "load-balance",
     "filter": "",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 50,
@@ -94,11 +108,32 @@ const GROUP_SPECS = [
     ]
   },
   {
+    "id": "grp-youtube",
+    "name": "📺 YouTube 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "🇭🇰 香港节点",
+      "🇹🇼 台湾节点",
+      "🇸🇬 狮城节点",
+      "🇯🇵 日本节点",
+      "🇺🇸 美国节点",
+      "🚀 节点选择",
+      "♻️ 自动测速优选"
+    ]
+  },
+  {
     "id": "grp-ai",
     "name": "🤖 AI 服务专属",
     "type": "select",
     "filter": "美|新|日|台|US|SG|JP|TW|🇺🇸|🇸🇬|🇯🇵|🇹🇼",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国|港|HK|Hong|🇭🇰|俄|RU|CN",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国|港|HK|Hong|🇭🇰|俄|RU|CN",
     "url": "https://chat.openai.com",
     "interval": 300,
     "tolerance": 50,
@@ -195,7 +230,7 @@ const GROUP_SPECS = [
     "name": "🇭🇰 香港节点",
     "type": "url-test",
     "filter": "港|HK|Hong\\s?Kong|🇭🇰",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 50,
@@ -208,7 +243,7 @@ const GROUP_SPECS = [
     "name": "🇹🇼 台湾节点",
     "type": "url-test",
     "filter": "台|TW|TaiWan|新北|彰化|🇹🇼",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 50,
@@ -221,7 +256,7 @@ const GROUP_SPECS = [
     "name": "🇯🇵 日本节点",
     "type": "url-test",
     "filter": "日|JP|Japan|东京|大阪|🇯🇵",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 50,
@@ -234,7 +269,7 @@ const GROUP_SPECS = [
     "name": "🇸🇬 狮城节点",
     "type": "url-test",
     "filter": "新|SG|Singapore|狮城|🇸🇬",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 50,
@@ -247,7 +282,7 @@ const GROUP_SPECS = [
     "name": "🇺🇸 美国节点",
     "type": "url-test",
     "filter": "美|US|United\\s?States|洛杉矶|硅谷|圣何塞|🇺🇸",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 50,
@@ -260,7 +295,7 @@ const GROUP_SPECS = [
     "name": "🇰🇷 韩国节点",
     "type": "url-test",
     "filter": "韩|KR|Korea|首尔|春川|🇰🇷",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 50,
@@ -273,7 +308,7 @@ const GROUP_SPECS = [
     "name": "🇪🇺 欧洲节点",
     "type": "url-test",
     "filter": "英|德|法|荷|瑞|意|UK|DE|FR|NL|CH|GB|伦敦|法兰克福|阿姆斯特丹|🇬🇧|🇩🇪|🇫🇷",
-    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国",
     "url": "https://www.gstatic.com/generate_204",
     "interval": 300,
     "tolerance": 80,
@@ -316,6 +351,22 @@ const RULE_PROVIDERS = {
     "format": "mrs",
     "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-httpdns-cn.mrs",
     "path": "./rule_providers/category-httpdns-cn.mrs",
+    "interval": 86400
+  },
+  "awavenue-ads": {
+    "type": "http",
+    "behavior": "classical",
+    "format": "yaml",
+    "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/refs/heads/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml",
+    "path": "./rule_providers/awavenue-ads.yaml",
+    "interval": 86400
+  },
+  "anti-ad": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "yaml",
+    "url": "https://anti-ad.net/clash.yaml",
+    "path": "./rule_providers/anti-ad.yaml",
     "interval": 86400
   },
   "category-ads-all": {
@@ -457,6 +508,13 @@ const RULE_PROVIDERS = {
 };
 
 const RULES = [
+  "DOMAIN-SUFFIX,doubleclick.net,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,googlesyndication.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,googleadservices.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,adservice.google.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,google-analytics.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,s0.2mdn.net,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,ads.youtube.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,app-measurement.com,🛡️ 广告拦截",
   "DOMAIN-KEYWORD,adservice,🛡️ 广告拦截",
   "DOMAIN-KEYWORD,pangolin-sdk-toutiao,🛡️ 广告拦截",
@@ -466,13 +524,16 @@ const RULES = [
   "DOMAIN-SUFFIX,cursor.sh,🚀 节点选择",
   "DOMAIN-SUFFIX,perplexity.ai,🚀 节点选择",
   "DOMAIN-KEYWORD,vercel,🚀 节点选择",
+  "AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),🛡️ 广告拦截",
   "RULE-SET,private,DIRECT",
   "RULE-SET,category-httpdns-cn,🛡️ 广告拦截",
+  "RULE-SET,awavenue-ads,🛡️ 广告拦截",
+  "RULE-SET,anti-ad,🛡️ 广告拦截",
   "RULE-SET,category-ads-all,🛡️ 广告拦截",
   "RULE-SET,ai-non-cn,🤖 AI 服务专属",
   "RULE-SET,google-gemini,🤖 AI 服务专属",
   "RULE-SET,tiktok,🎵 TikTok 专属",
-  "RULE-SET,youtube,🎬 流媒体解锁",
+  "RULE-SET,youtube,📺 YouTube 专属",
   "RULE-SET,netflix,🎬 流媒体解锁",
   "RULE-SET,disney,🎬 流媒体解锁",
   "RULE-SET,spotify,🎬 流媒体解锁",
@@ -522,7 +583,10 @@ function main(config) {
     })
     .filter(Boolean);
 
-  // 2. 动态匹配每个节点策略组（支持 url-test 自动选择、fallback 故障转移、load-balance 均衡，自动跳过空地区组）
+  // 2. 动态匹配每个节点策略组（支持 inline proxies 与 proxy-providers，确保节点列表完整可见）
+  var hasProviders = Boolean(
+    config['proxy-providers'] && Object.keys(config['proxy-providers']).length > 0
+  );
   var activeGroupNames = { DIRECT: true, REJECT: true, 'REJECT-DROP': true };
   var builtGroups = [];
 
@@ -537,16 +601,28 @@ function main(config) {
         return true;
       });
 
-      if (SKIP_EMPTY_REGION_GROUPS && matchedNames.length === 0) {
+      // 若使用 inline proxies 且当前地区无节点，自动跳过该地区组（保留含子策略组的主选择组）
+      var hasSubProxies = Array.isArray(spec.proxies) && spec.proxies.length > 0;
+      if (!hasProviders && SKIP_EMPTY_REGION_GROUPS && matchedNames.length === 0 && !hasSubProxies) {
         continue;
       }
 
       var grpObj = {
         name: spec.name,
         type: spec.type,
-        proxies: matchedNames.length > 0 ? matchedNames : ['DIRECT'],
-        _isNodeGroup: true,
+        _isNodeGroup: !hasSubProxies,
+        _subRefs: hasSubProxies ? spec.proxies : [],
+        _matchedNodes: matchedNames,
       };
+      if (allProxyNames.length === 0 && hasProviders) {
+        grpObj['include-all'] = true;
+        if (spec.filter) grpObj.filter = spec.filter;
+        if (spec.excludeFilter || GLOBAL_EXCLUDE) {
+          grpObj['exclude-filter'] = spec.excludeFilter || GLOBAL_EXCLUDE;
+        }
+      } else {
+        grpObj.proxies = matchedNames.length > 0 ? matchedNames : ['DIRECT'];
+      }
       if (spec.type === 'url-test' || spec.type === 'fallback') {
         grpObj.url = spec.url || 'https://www.gstatic.com/generate_204';
         grpObj.interval = spec.interval || 300;
@@ -566,31 +642,45 @@ function main(config) {
         type: spec.type,
         proxies: spec.proxies,
         _isNodeGroup: false,
+        _subRefs: spec.proxies || [],
+        _matchedNodes: [],
       });
       activeGroupNames[spec.name] = true;
     }
   }
 
-  // 3. 清理聚合选择组中已被跳过的空地区引用
+  // 3. 清理聚合选择组中已被跳过的空地区引用，并把节点列表合并到 🚀 节点选择 底部
   config['proxy-groups'] = builtGroups.map(function (grp) {
     var isNodeGroup = grp._isNodeGroup;
+    var subRefs = grp._subRefs || [];
+    var matchedNodes = grp._matchedNodes || [];
     delete grp._isNodeGroup;
+    delete grp._subRefs;
+    delete grp._matchedNodes;
+
     if (isNodeGroup) {
       return grp;
     }
-    var validRefs = (grp.proxies || []).filter(function (ref) {
+    var validRefs = subRefs.filter(function (ref) {
       return Boolean(activeGroupNames[ref]) || allProxyNames.indexOf(ref) !== -1;
     });
-    return {
+    var merged = validRefs.concat(matchedNodes);
+    var out = {
       name: grp.name,
       type: grp.type,
-      proxies:
-        validRefs.length > 0
-          ? validRefs
-          : allProxyNames.length > 0
-            ? allProxyNames.slice(0, 5)
-            : ['DIRECT'],
     };
+    if (grp['include-all']) {
+      out['include-all'] = true;
+      if (grp.filter) out.filter = grp.filter;
+      if (grp['exclude-filter']) out['exclude-filter'] = grp['exclude-filter'];
+    }
+    out.proxies =
+      merged.length > 0
+        ? merged
+        : allProxyNames.length > 0
+          ? allProxyNames
+          : ['DIRECT'];
+    return out;
   });
 
   // 4. 注入 rule-providers 与分流规则
@@ -612,30 +702,39 @@ function main(config) {
   }
 
   if (OVERWRITE_DNS) {
+    var fakeIpFilterList = [
+      '+.lan',
+      '+.local',
+      'localhost.ptlogin2.qq.com',
+      '+.msftconnecttest.com',
+      '+.msftncsi.com',
+    ];
+    if (RULE_PROVIDERS['private']) fakeIpFilterList.push('RULE-SET:private');
+    if (RULE_PROVIDERS['cn-domain']) fakeIpFilterList.push('RULE-SET:cn-domain');
+
+    var chinaPolicyProviders = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter(function (k) {
+      return Boolean(RULE_PROVIDERS[k]);
+    });
+    var dnsPolicy = {
+      'geosite:cn,private': ["https://dns.alidns.com/dns-query"],
+      'geosite:geolocation-!cn': ["https://1.1.1.1/dns-query"],
+    };
+    if (chinaPolicyProviders.length > 0) {
+      dnsPolicy['RULE-SET:' + chinaPolicyProviders.join(',')] = ["https://dns.alidns.com/dns-query"];
+    }
+
     config.dns = {
       enable: true,
       ipv6: false,
       'respect-rules': true,
       'enhanced-mode': "fake-ip",
       'fake-ip-range': '198.18.0.1/16',
-      'fake-ip-filter': [
-        '+.lan',
-        '+.local',
-        'localhost.ptlogin2.qq.com',
-        '+.msftconnecttest.com',
-        '+.msftncsi.com',
-        'RULE-SET:private',
-        'RULE-SET:cn-domain',
-      ],
+      'fake-ip-filter': fakeIpFilterList,
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
       'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', "https://dns.alidns.com/dns-query"],
       'direct-nameserver': ["https://dns.alidns.com/dns-query"],
       nameserver: ["https://1.1.1.1/dns-query"],
-      'nameserver-policy': {
-        'RULE-SET:private,cn-domain,apple-cn,microsoft-cn': ["https://dns.alidns.com/dns-query"],
-        'geosite:cn,private': ["https://dns.alidns.com/dns-query"],
-        'geosite:geolocation-!cn': ["https://1.1.1.1/dns-query"],
-      },
+      'nameserver-policy': dnsPolicy,
     };
   }
 

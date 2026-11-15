@@ -268,11 +268,13 @@ export function traceRuleMatch(rawQuery: string, state: ClashWorkspaceState): Ru
           : state.groups.some((g) => g.enabled && g.name === mod.targetGroup)
             ? mod.targetGroup
             : primaryGroup;
+      const chosenUrl = state.kernel.ruleSourceFlavor === 'metacubex-mrs' ? mod.mrsUrl : mod.yamlUrl;
+      const extLabel = chosenUrl.endsWith('.mrs') ? '.mrs' : chosenUrl.endsWith('.txt') ? '.txt' : '.yaml';
       return {
         query,
         matched: true,
         ruleLine: `RULE-SET,${mod.providerName},${target}${mod.noResolve ? ',no-resolve' : ''}`,
-        sourceLabel: `${mod.label} (${state.kernel.ruleSourceFlavor === 'metacubex-mrs' ? '.mrs' : '.yaml'})`,
+        sourceLabel: `${mod.label} (${extLabel})`,
         targetGroup: target,
         dnsHint:
           target === 'DIRECT'

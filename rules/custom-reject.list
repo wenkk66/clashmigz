@@ -1,4 +1,11 @@
-# 自定义去广告与隐私遥测拦截规则 (归入 🛡️ 广告拦截 策略组)
+# 自定义去广告、YouTube 广告追踪与隐私遥测拦截规则
+DOMAIN-SUFFIX,doubleclick.net
+DOMAIN-SUFFIX,googlesyndication.com
+DOMAIN-SUFFIX,googleadservices.com
+DOMAIN-SUFFIX,adservice.google.com
+DOMAIN-SUFFIX,google-analytics.com
+DOMAIN-SUFFIX,s0.2mdn.net
+DOMAIN-SUFFIX,ads.youtube.com
 DOMAIN-SUFFIX,app-measurement.com
 DOMAIN-KEYWORD,adservice
 DOMAIN-KEYWORD,pangolin-sdk-toutiao

@@ -1,7 +1,7 @@
 import { ClashWorkspaceState } from '../types/clash';
 
 export const DEFAULT_GLOBAL_EXCLUDE =
-  '剩余流量|套餐到期|过期时间|官网|重置|Traffic|Expire|GB|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国';
+  '剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国';
 
 export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
   overwrite: {
@@ -17,16 +17,17 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       name: '🚀 节点选择',
       type: 'select',
       filter: '',
-      excludeFilter: '',
+      excludeFilter: DEFAULT_GLOBAL_EXCLUDE,
       url: '',
       interval: 300,
       tolerance: 50,
       strategy: 'consistent-hashing',
-      includeAllProxies: false,
+      includeAllProxies: true,
       proxies: [
         '♻️ 自动测速优选',
         '🚨 故障转移',
         '⚖️ 负载均衡',
+        '🎯 手动节点列表',
         '🇭🇰 香港节点',
         '🇹🇼 台湾节点',
         '🇯🇵 日本节点',
@@ -38,6 +39,20 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       ],
       enabled: true,
       isSystem: true,
+    },
+    {
+      id: 'grp-manual',
+      name: '🎯 手动节点列表',
+      type: 'select',
+      filter: '',
+      excludeFilter: DEFAULT_GLOBAL_EXCLUDE,
+      url: '',
+      interval: 300,
+      tolerance: 50,
+      strategy: 'consistent-hashing',
+      includeAllProxies: true,
+      proxies: [],
+      enabled: true,
     },
     {
       id: 'grp-auto',
@@ -93,6 +108,28 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       strategy: 'consistent-hashing',
       includeAllProxies: false,
       proxies: ['REJECT', 'REJECT-DROP', 'DIRECT'],
+      enabled: true,
+    },
+    {
+      id: 'grp-youtube',
+      name: '📺 YouTube 专属',
+      type: 'select',
+      filter: '',
+      excludeFilter: '',
+      url: '',
+      interval: 300,
+      tolerance: 50,
+      strategy: 'consistent-hashing',
+      includeAllProxies: false,
+      proxies: [
+        '🇭🇰 香港节点',
+        '🇹🇼 台湾节点',
+        '🇸🇬 狮城节点',
+        '🇯🇵 日本节点',
+        '🇺🇸 美国节点',
+        '🚀 节点选择',
+        '♻️ 自动测速优选',
+      ],
       enabled: true,
     },
     {
@@ -315,8 +352,34 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       sampleDomains: ['httpdns.alicdn.com', 'httpdns.n.netease.com', 'dns.weixin.qq.com'],
     },
     {
+      id: 'rule-awavenue',
+      label: '秋风广告规则 (AWAvenue Ads 移动端强效去广告)',
+      category: 'reject',
+      providerName: 'awavenue-ads',
+      behavior: 'classical',
+      mrsUrl: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/refs/heads/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml',
+      yamlUrl: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/refs/heads/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: true,
+      sampleDomains: ['ad.doubleclick.net', 'ads.youtube.com', 'pangolin.snssdk.com'],
+    },
+    {
+      id: 'rule-antiad',
+      label: 'anti-AD 广告与隐私追踪过滤',
+      category: 'reject',
+      providerName: 'anti-ad',
+      behavior: 'domain',
+      mrsUrl: 'https://anti-ad.net/clash.yaml',
+      yamlUrl: 'https://anti-ad.net/clash.yaml',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: true,
+      sampleDomains: ['googleads.g.doubleclick.net', 'pagead2.googlesyndication.com'],
+    },
+    {
       id: 'rule-ads',
-      label: '全网广告与遥测追踪拦截 (AdGuard / EasyList 聚合)',
+      label: 'MetaCubeX 全网广告与遥测聚合 (AdGuard / EasyList)',
       category: 'reject',
       providerName: 'category-ads-all',
       behavior: 'domain',
@@ -368,13 +431,13 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
     },
     {
       id: 'rule-youtube',
-      label: 'YouTube 流媒体',
+      label: 'YouTube 流媒体 (自动禁用 QUIC UDP 443)',
       category: 'streaming',
       providerName: 'youtube',
       behavior: 'domain',
       mrsUrl: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs',
       yamlUrl: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.yaml',
-      targetGroup: '🎬 流媒体解锁',
+      targetGroup: '📺 YouTube 专属',
       interval: 86400,
       enabled: true,
       sampleDomains: ['youtube.com', 'youtu.be', 'googlevideo.com', 'ytimg.com'],
@@ -565,7 +628,14 @@ DOMAIN-KEYWORD,vercel`,
 DOMAIN-SUFFIX,pt.example.edu.cn
 DOMAIN-SUFFIX,local
 IP-CIDR,100.64.0.0/10,no-resolve`,
-    rejectList: `# 自定义去广告与隐私遥测拦截规则 (归入 🛡️ 广告拦截 策略组)
+    rejectList: `# 自定义去广告、YouTube 广告追踪与隐私遥测拦截规则
+DOMAIN-SUFFIX,doubleclick.net
+DOMAIN-SUFFIX,googlesyndication.com
+DOMAIN-SUFFIX,googleadservices.com
+DOMAIN-SUFFIX,adservice.google.com
+DOMAIN-SUFFIX,google-analytics.com
+DOMAIN-SUFFIX,s0.2mdn.net
+DOMAIN-SUFFIX,ads.youtube.com
 DOMAIN-SUFFIX,app-measurement.com
 DOMAIN-KEYWORD,adservice
 DOMAIN-KEYWORD,pangolin-sdk-toutiao`,
@@ -576,7 +646,7 @@ export const SAMPLE_NODE_LIST = `剩余流量：842.19 GB
 距离下次重置剩余：16 天
 官网地址：https://example.com
 🇭🇰 香港 IEPL 专线 01 [1x]
-🇭🇰 香港 IEPL 专线 02 [1x]
+🇭🇰 香港 IEPL 专线 02 [10Gbps]
 🇭🇰 香港原生流媒体 03 [2x]
 🇭🇰 香港大带宽下载 04 [5x 倍率]
 🇹🇼 台湾台北家宽 01
@@ -590,6 +660,6 @@ export const SAMPLE_NODE_LIST = `剩余流量：842.19 GB
 🇺🇸 美国硅谷高防 02
 🇺🇸 美国圣何塞住宅 IP
 🇰🇷 韩国首尔原生 01
-🇬🇧 英国伦敦节点 01
+🇬🇧 英国伦敦 GB 节点 01
 🇩🇪 德国法兰克福 01
 ⚠️ 如无法连接请更新订阅`;

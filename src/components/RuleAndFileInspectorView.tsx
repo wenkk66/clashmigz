@@ -13,8 +13,9 @@ interface RuleAndFileInspectorViewProps {
 
 const QUICK_TEST_DOMAINS = [
   'chatgpt.com',
+  'youtube.com',
+  'ads.youtube.com',
   'tiktok.com',
-  'disneyplus.com',
   'github.com',
   'google.com',
   'steampowered.com',
@@ -112,7 +113,7 @@ export const RuleAndFileInspectorView: React.FC<RuleAndFileInspectorViewProps> =
             <div className="text-xs text-slate-500">最终出口策略组</div>
             <div
               className={`text-sm font-semibold mt-1 ${
-                trace.targetGroup === 'REJECT'
+                trace.targetGroup === 'REJECT' || trace.targetGroup.includes('广告拦截')
                   ? 'text-red-600'
                   : trace.targetGroup === 'DIRECT'
                     ? 'text-emerald-600'

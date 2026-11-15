@@ -43,7 +43,11 @@ function main() {
     const rulesKey = Object.prototype.hasOwnProperty.call(parsed, 'rules!') ? 'rules!' : 'rules';
     const currentRules = parsed[rulesKey] || [];
     const staticRules = currentRules.filter(
-      (r) => r.startsWith('RULE-SET,') || r.startsWith('GEOIP,') || r.startsWith('MATCH,')
+      (r) =>
+        r.startsWith('AND,') ||
+        r.startsWith('RULE-SET,') ||
+        r.startsWith('GEOIP,') ||
+        r.startsWith('MATCH,')
     );
     const nextRules = [...customMerged, ...staticRules];
     yamlRulesCount = nextRules.length;
@@ -74,7 +78,11 @@ function main() {
     if (match) {
       const existingRules = JSON.parse(match[1]);
       const staticRules = existingRules.filter(
-        (r) => r.startsWith('RULE-SET,') || r.startsWith('GEOIP,') || r.startsWith('MATCH,')
+        (r) =>
+          r.startsWith('AND,') ||
+          r.startsWith('RULE-SET,') ||
+          r.startsWith('GEOIP,') ||
+          r.startsWith('MATCH,')
       );
       const nextRules = [...customMerged, ...staticRules];
       if (JSON.stringify(existingRules) !== JSON.stringify(nextRules)) {
@@ -83,21 +91,26 @@ function main() {
       }
     }
 
-    // 使用沙箱执行 main() 干跑验证：验证清洗节点、自动选择、故障转移、空组剔除与去广告规则
+    // 使用沙箱执行 main() 干跑验证：验证清洗节点、节点列表可见性、自动选择、故障转移、空组剔除与去广告规则
     const sandbox = {};
     vm.createContext(sandbox);
     vm.runInContext(jsContent, sandbox);
     const dryRun = sandbox.main({
       proxies: [
-        { name: '🇭🇰 香港 01', type: 'ss', server: '1.1.1.1', port: 443 },
+        { name: '🇭🇰 香港 01 [10Gbps]', type: 'ss', server: '1.1.1.1', port: 443 },
         { name: '🇯🇵 日本 01', type: 'vmess', server: '2.2.2.2', port: 443 },
         { name: '🇺🇸 美国 01', type: 'trojan', server: '3.3.3.3', port: 443 },
+        { name: '🇬🇧 英国 GB 01', type: 'ss', server: '4.4.4.4', port: 443 },
         { name: '剩余流量：500 GB', type: 'ss', server: '127.0.0.1', port: 80 },
       ],
     });
     const hasFailover = dryRun['proxy-groups'].some((g) => g.type === 'fallback');
     const hasUrlTest = dryRun['proxy-groups'].some((g) => g.type === 'url-test');
-    jsStatus = `通过 (${dryRun['proxy-groups'].length} 组 / ${dryRun.rules.length} 规则 / 自动测速:${hasUrlTest} / 故障转移:${hasFailover})`;
+    const selectGroup = dryRun['proxy-groups'].find((g) => g.name.includes('节点选择'));
+    const hasDirectNodesInSelect = Boolean(
+      selectGroup && selectGroup.proxies.some((p) => p.includes('10Gbps')) && selectGroup.proxies.some((p) => p.includes('GB'))
+    );
+    jsStatus = `通过 (${dryRun['proxy-groups'].length} 组 / ${dryRun.rules.length} 规则 / 自动测速:${hasUrlTest} / 故障转移:${hasFailover} / 节点列表可见:${hasDirectNodesInSelect})`;
   }
 
   const report = [
