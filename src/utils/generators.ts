@@ -24,6 +24,14 @@ function parseCustomRuleLines(raw: string, target: string): string[] {
     });
 }
 
+function parseDnsServers(raw: string, fallback: string[]): string[] {
+  const list = raw
+    .split(/[\n,;]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return list.length > 0 ? list : fallback;
+}
+
 export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<string, unknown> {
   const { overwrite, groups, ruleModules, kernel, customRules } = state;
 
@@ -192,6 +200,15 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
     const chinaPolicyRuleSets = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter((name) =>
       enabledProviderSet.has(name)
     );
+    const chinaDnsList = parseDnsServers(kernel.dohChina || '', [
+      'https://dns.alidns.com/dns-query',
+      'https://doh.pub/dns-query',
+    ]);
+    const globalDnsList = parseDnsServers(kernel.dohGlobal || '', [
+      'https://dns.google/dns-query',
+      'https://1.1.1.1/dns-query',
+      'tls://8.8.8.8:853',
+    ]);
     const nameserverPolicy: Record<string, string[]> = {};
     if (overwrite.dnsAdSinkhole !== false) {
       if (adDomainProviders.length > 0) {
@@ -199,16 +216,10 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
       }
       nameserverPolicy['geosite:category-ads-all'] = ['rcode://success'];
     }
-    nameserverPolicy['geosite:cn,private'] = [
-      kernel.dohChina || 'https://dns.alidns.com/dns-query',
-    ];
-    nameserverPolicy['geosite:geolocation-!cn'] = [
-      kernel.dohGlobal || 'https://1.1.1.1/dns-query',
-    ];
+    nameserverPolicy['geosite:cn,private'] = chinaDnsList;
+    nameserverPolicy['geosite:geolocation-!cn'] = globalDnsList;
     if (chinaPolicyRuleSets.length > 0) {
-      nameserverPolicy[`RULE-SET:${chinaPolicyRuleSets.join(',')}`] = [
-        kernel.dohChina || 'https://dns.alidns.com/dns-query',
-      ];
+      nameserverPolicy[`RULE-SET:${chinaPolicyRuleSets.join(',')}`] = chinaDnsList;
     }
 
     config['dns!'] = {
@@ -227,9 +238,9 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
         ...adFakeIpRuleSets,
       ],
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
-      'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', kernel.dohChina || 'https://dns.alidns.com/dns-query'],
-      'direct-nameserver': [kernel.dohChina || 'https://dns.alidns.com/dns-query'],
-      nameserver: [kernel.dohGlobal || 'https://1.1.1.1/dns-query'],
+      'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', ...chinaDnsList],
+      'direct-nameserver': chinaDnsList,
+      nameserver: globalDnsList,
       'nameserver-policy': nameserverPolicy,
     };
   }
@@ -276,6 +287,15 @@ export function generateOverwriteJsString(state: ClashWorkspaceState): string {
     enabledGroups.find((g) => g.id === 'grp-fallback')?.name || primarySelectName;
 
   const isMrs = kernel.ruleSourceFlavor === 'metacubex-mrs';
+  const chinaDnsList = parseDnsServers(kernel.dohChina || '', [
+    'https://dns.alidns.com/dns-query',
+    'https://doh.pub/dns-query',
+  ]);
+  const globalDnsList = parseDnsServers(kernel.dohGlobal || '', [
+    'https://dns.google/dns-query',
+    'https://1.1.1.1/dns-query',
+    'tls://8.8.8.8:853',
+  ]);
   const ruleProvidersObj: Record<string, Record<string, unknown>> = {};
   const enabledRules = ruleModules.filter((r) => r.enabled);
 
@@ -568,10 +588,10 @@ function main(config) {
       }
       dnsPolicy['geosite:category-ads-all'] = ['rcode://success'];
     }
-    dnsPolicy['geosite:cn,private'] = [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}];
-    dnsPolicy['geosite:geolocation-!cn'] = [${JSON.stringify(kernel.dohGlobal || 'https://1.1.1.1/dns-query')}];
+    dnsPolicy['geosite:cn,private'] = ${JSON.stringify(chinaDnsList)};
+    dnsPolicy['geosite:geolocation-!cn'] = ${JSON.stringify(globalDnsList)};
     if (chinaPolicyProviders.length > 0) {
-      dnsPolicy['RULE-SET:' + chinaPolicyProviders.join(',')] = [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}];
+      dnsPolicy['RULE-SET:' + chinaPolicyProviders.join(',')] = ${JSON.stringify(chinaDnsList)};
     }
 
     config.dns = {
@@ -582,9 +602,9 @@ function main(config) {
       'fake-ip-range': '198.18.0.1/16',
       'fake-ip-filter': fakeIpFilterList,
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
-      'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', ${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
-      'direct-nameserver': [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
-      nameserver: [${JSON.stringify(kernel.dohGlobal || 'https://1.1.1.1/dns-query')}],
+      'proxy-server-nameserver': ${JSON.stringify(['223.5.5.5', '119.29.29.29', ...chinaDnsList])},
+      'direct-nameserver': ${JSON.stringify(chinaDnsList)},
+      nameserver: ${JSON.stringify(globalDnsList)},
       'nameserver-policy': dnsPolicy,
     };
   }

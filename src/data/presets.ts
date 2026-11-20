@@ -777,8 +777,8 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
   kernel: {
     ipv6: false,
     dnsMode: 'fake-ip',
-    dohChina: 'https://dns.alidns.com/dns-query',
-    dohGlobal: 'https://1.1.1.1/dns-query',
+    dohChina: 'https://dns.alidns.com/dns-query, https://doh.pub/dns-query',
+    dohGlobal: 'https://dns.google/dns-query, https://1.1.1.1/dns-query, tls://8.8.8.8:853',
     ruleSourceFlavor: 'metacubex-mrs',
     adBlockLevel: 'balanced',
     globalExcludeFilter: DEFAULT_GLOBAL_EXCLUDE,

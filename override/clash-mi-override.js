@@ -812,10 +812,10 @@ function main(config) {
       }
       dnsPolicy['geosite:category-ads-all'] = ['rcode://success'];
     }
-    dnsPolicy['geosite:cn,private'] = ["https://dns.alidns.com/dns-query"];
-    dnsPolicy['geosite:geolocation-!cn'] = ["https://1.1.1.1/dns-query"];
+    dnsPolicy['geosite:cn,private'] = ["https://dns.alidns.com/dns-query","https://doh.pub/dns-query"];
+    dnsPolicy['geosite:geolocation-!cn'] = ["https://dns.google/dns-query","https://1.1.1.1/dns-query","tls://8.8.8.8:853"];
     if (chinaPolicyProviders.length > 0) {
-      dnsPolicy['RULE-SET:' + chinaPolicyProviders.join(',')] = ["https://dns.alidns.com/dns-query"];
+      dnsPolicy['RULE-SET:' + chinaPolicyProviders.join(',')] = ["https://dns.alidns.com/dns-query","https://doh.pub/dns-query"];
     }
 
     config.dns = {
@@ -826,9 +826,9 @@ function main(config) {
       'fake-ip-range': '198.18.0.1/16',
       'fake-ip-filter': fakeIpFilterList,
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
-      'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', "https://dns.alidns.com/dns-query"],
-      'direct-nameserver': ["https://dns.alidns.com/dns-query"],
-      nameserver: ["https://1.1.1.1/dns-query"],
+      'proxy-server-nameserver': ["223.5.5.5","119.29.29.29","https://dns.alidns.com/dns-query","https://doh.pub/dns-query"],
+      'direct-nameserver': ["https://dns.alidns.com/dns-query","https://doh.pub/dns-query"],
+      nameserver: ["https://dns.google/dns-query","https://1.1.1.1/dns-query","tls://8.8.8.8:853"],
       'nameserver-policy': dnsPolicy,
     };
   }

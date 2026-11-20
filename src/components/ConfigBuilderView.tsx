@@ -1008,7 +1008,7 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">
-                  国内 DoH 上游
+                  国内 DoH 上游（可用逗号填多个）
                 </label>
                 <input
                   type="text"
@@ -1024,7 +1024,7 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">
-                  海外 DoH 上游
+                  海外 DoH / DoT 上游（可用逗号填多个防单点超时）
                 </label>
                 <input
                   type="text"
