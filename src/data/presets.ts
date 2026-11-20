@@ -34,8 +34,8 @@ export const AD_BLOCK_LEVEL_PRESETS: Record<
   },
   ultra: {
     title: '极客满血',
-    deviceHint: '旗舰手机 / 电脑 / 软路由（10 引擎全开）',
-    summary: '在均衡强效基础上再叠加移动端广告行为库、反劫持/防监控上报 (Hijacking) 与 anti-AD，实现最高级别全网广告与隐私拦截。',
+    deviceHint: '旗舰手机 / 电脑 / 软路由（11 引擎全开）',
+    summary: '在均衡强效基础上再叠加 HaGeZi Multi PRO++ (25万+)、移动端广告行为库、反劫持/防监控上报与 anti-AD，实现最高级别全网广告与隐私拦截。',
     enabledRuleIds: [
       'rule-httpdns',
       'rule-awavenue',
@@ -44,6 +44,7 @@ export const AD_BLOCK_LEVEL_PRESETS: Record<
       'rule-cats-adrules',
       'rule-adguard-base',
       'rule-privacy',
+      'rule-hagezi-pro-plus',
       'rule-mobile-ad-enhance',
       'rule-hijacking',
       'rule-antiad',
@@ -520,6 +521,21 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       sampleDomains: ['analytics.tiktok.com', 'metrics.icloud.com', 'app-measurement.com', 'tracking.miui.com'],
     },
     {
+      id: 'rule-hagezi-pro-plus',
+      label: 'HaGeZi Multi PRO++ 国际广告与追踪全集 (25万+ .mrs)',
+      category: 'reject',
+      tier: 'ultra',
+      providerName: 'hagezi-pro-plus',
+      behavior: 'domain',
+      mrsBehavior: 'domain',
+      mrsUrl: 'https://raw.githubusercontent.com/MiHomoer/MiHomo-Hagezi/release/HageziProPlus.mrs',
+      yamlUrl: 'https://raw.githubusercontent.com/MiHomoer/MiHomo-Hagezi/release/HageziProPlus.txt',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: false,
+      sampleDomains: ['imasdk.googleapis.com', 'pagead2.googlesyndication.com', 'metrics.icloud.com'],
+    },
+    {
       id: 'rule-mobile-ad-enhance',
       label: '移动端 App 广告行为增强（blackmatrix7 Advertising）',
       category: 'reject',
@@ -802,15 +818,29 @@ DOMAIN-KEYWORD,vercel`,
 DOMAIN-SUFFIX,pt.example.edu.cn
 DOMAIN-SUFFIX,local
 IP-CIDR,100.64.0.0/10,no-resolve`,
-    rejectList: `# 自定义强力去广告、YouTube/Google 追踪、隐私遥测、国内 App 开屏 SDK 与 HTTPDNS IP 封堵
-# 1. YouTube / Google / TikTok 广告与隐私遥测
+    rejectList: `# 自定义强力去广告、YouTube/Google IMA 广告 SDK、隐私遥测、国内 App 开屏与 HTTPDNS 封堵
+# 1. YouTube / Google Ads / IMA SDK / TikTok 广告与遥测
 DOMAIN-SUFFIX,doubleclick.net
+DOMAIN-SUFFIX,doubleclick-cn.net
+DOMAIN-SUFFIX,googleads.g.doubleclick.net
+DOMAIN-SUFFIX,pubads.g.doubleclick.net
+DOMAIN-SUFFIX,securepubads.g.doubleclick.net
+DOMAIN-SUFFIX,adclick.g.doubleclick.net
+DOMAIN-SUFFIX,cm.g.doubleclick.net
+DOMAIN-SUFFIX,stats.g.doubleclick.net
 DOMAIN-SUFFIX,googlesyndication.com
+DOMAIN-SUFFIX,pagead2.googlesyndication.com
+DOMAIN-SUFFIX,tpc.googlesyndication.com
+DOMAIN-SUFFIX,ade.googlesyndication.com
 DOMAIN-SUFFIX,googleadservices.com
 DOMAIN-SUFFIX,adservice.google.com
+DOMAIN-SUFFIX,partnerad.l.google.com
 DOMAIN-SUFFIX,google-analytics.com
+DOMAIN-SUFFIX,ssl.google-analytics.com
 DOMAIN-SUFFIX,fundingchoicesmessages.google.com
-DOMAIN-SUFFIX,s0.2mdn.net
+DOMAIN-SUFFIX,imasdk.googleapis.com
+DOMAIN-SUFFIX,2mdn.net
+DOMAIN-SUFFIX,admob.com
 DOMAIN-SUFFIX,ads.youtube.com
 DOMAIN-SUFFIX,app-measurement.com
 DOMAIN-SUFFIX,crashlytics.com
@@ -818,6 +848,9 @@ DOMAIN-SUFFIX,firebaseinappmessaging.googleapis.com
 DOMAIN-SUFFIX,ads.tiktok.com
 DOMAIN-SUFFIX,ads-sg.tiktok.com
 DOMAIN-SUFFIX,analytics.tiktok.com
+DOMAIN-KEYWORD,googleads
+DOMAIN-KEYWORD,doubleclick
+DOMAIN-KEYWORD,pagead
 # 2. 国内 App 开屏广告联盟与埋点遥测 (穿山甲 / 广点通 / 百度 / 快手 / 小米 / OPPO / vivo / 友盟)
 DOMAIN-SUFFIX,pangolin-sdk-toutiao.com
 DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com

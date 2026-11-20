@@ -135,6 +135,7 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
   if (youtubeEnabled) {
     // 拦截 YouTube QUIC (UDP 443)，强制走 TCP 提升稳定性与分流/广告域名嗅探命中率
     rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT-DROP');
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(DOMAIN-SUFFIX,googlevideo.com)),REJECT-DROP');
   }
   const adsAllEnabled = enabledRules.some((r) => r.providerName === 'category-ads-all');
   if (adsAllEnabled) {
@@ -146,6 +147,12 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
     ruleProvidersObj['awavenue-ads']?.behavior === 'domain';
   if (awavenueEnabled) {
     rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,awavenue-ads)),REJECT-DROP');
+  }
+  if (enabledRules.some((r) => r.providerName === 'adblock-ultra')) {
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,adblock-ultra)),REJECT-DROP');
+  }
+  if (enabledRules.some((r) => r.providerName === 'hagezi-pro-plus')) {
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,hagezi-pro-plus)),REJECT-DROP');
   }
 
   for (const mod of enabledRules) {
@@ -173,6 +180,7 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
       enable: true,
       'force-dns-mapping': true,
       'parse-pure-ip': true,
+      'override-destination': true,
       sniff: {
         HTTP: { ports: [80, '8080-8880'], 'override-destination': true },
         TLS: { ports: [443, 8443] },
@@ -329,6 +337,7 @@ export function generateOverwriteJsString(state: ClashWorkspaceState): string {
   const youtubeEnabled = enabledRules.some((r) => r.providerName === 'youtube');
   if (youtubeEnabled) {
     rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT-DROP');
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(DOMAIN-SUFFIX,googlevideo.com)),REJECT-DROP');
   }
   const adsAllEnabled = enabledRules.some((r) => r.providerName === 'category-ads-all');
   if (adsAllEnabled) {
@@ -339,6 +348,12 @@ export function generateOverwriteJsString(state: ClashWorkspaceState): string {
     ruleProvidersObj['awavenue-ads']?.behavior === 'domain';
   if (awavenueEnabled) {
     rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,awavenue-ads)),REJECT-DROP');
+  }
+  if (enabledRules.some((r) => r.providerName === 'adblock-ultra')) {
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,adblock-ultra)),REJECT-DROP');
+  }
+  if (enabledRules.some((r) => r.providerName === 'hagezi-pro-plus')) {
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,hagezi-pro-plus)),REJECT-DROP');
   }
 
   const adDomainProviders = enabledRules
@@ -551,6 +566,7 @@ function main(config) {
       enable: true,
       'force-dns-mapping': true,
       'parse-pure-ip': true,
+      'override-destination': true,
       sniff: {
         HTTP: { ports: [80, '8080-8880'], 'override-destination': true },
         TLS: { ports: [443, 8443] },
@@ -951,7 +967,7 @@ export function generateReadmeMd(state: ClashWorkspaceState): string {
 - **完整节点列表可见**：主组 \`🚀 节点选择\` 同时保留地区分组与全部清洗后单节点，另附独立 \`🎯 手动节点列表\`，兼容 \`proxies\` 与 \`proxy-providers\` 订阅。
 - **自动故障转移 (\`fallback\`)**：每 180 秒探测可用性，当前节点失联时自动无缝切换至下一个可用节点。
 - **负载均衡 (\`load-balance\`)**：基于 \`consistent-hashing\` 会话保持的并发分流。
-- **分级多引擎去广告、隐私保护与 YouTube 优化**（当前等级：\`${kernel.adBlockLevel || 'balanced'}\`）：支持按设备性能一键切换轻量 / 均衡 / 极客满血去广告（最高 10 大引擎），集成 **AdGuard 基础 (SDNS)**、**blackmatrix7 Privacy 隐私追踪 / Hijacking 反劫持 / 移动端广告增强**、**AWAvenue-Ads（秋风 .mrs）**、**217heidai AdGuard+EasyList 全量**、**Cats-Team AdRules**、**anti-AD** 与 **HTTPDNS 拦截**，并阻断 YouTube 与广告 SDK 的 QUIC UDP 443。
+- **分级多引擎去广告、隐私保护与 YouTube 优化**（当前等级：\`${kernel.adBlockLevel || 'balanced'}\`）：支持按设备性能一键切换轻量 / 均衡 / 极客满血去广告（最高 11 大引擎），集成 **HaGeZi Multi PRO++**、**AdGuard 基础 (SDNS)**、**blackmatrix7 Privacy 隐私追踪 / Hijacking 反劫持 / 移动端广告增强**、**AWAvenue-Ads（秋风 .mrs）**、**217heidai AdGuard+EasyList 全量**、**Cats-Team AdRules**、**anti-AD** 与 **HTTPDNS 拦截**，开启 TLS/QUIC \`override-destination\` 深度嗅探并全链路阻断 YouTube 与广告 SDK 的 QUIC UDP 443。
 - **智能空组跳过（JS 模式）**：自动清洗无效/高倍率提示节点（保留 \`10Gbps\`、\`GB\` 节点），并在订阅缺少某地区节点时自动跳过对应分组。
 
 ## 导入 Clash Mi 的覆写订阅链接

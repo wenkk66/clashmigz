@@ -8,6 +8,7 @@ sniffer!:
   enable: true
   force-dns-mapping: true
   parse-pure-ip: true
+  override-destination: true
   sniff:
     HTTP:
       ports:
@@ -414,12 +415,26 @@ rule-providers!:
     interval: 86400
 rules!:
   - DOMAIN-SUFFIX,doubleclick.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,doubleclick-cn.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,googleads.g.doubleclick.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,pubads.g.doubleclick.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,securepubads.g.doubleclick.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,adclick.g.doubleclick.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,cm.g.doubleclick.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,stats.g.doubleclick.net,🛡️ 广告拦截
   - DOMAIN-SUFFIX,googlesyndication.com,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,pagead2.googlesyndication.com,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,tpc.googlesyndication.com,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,ade.googlesyndication.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,googleadservices.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,adservice.google.com,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,partnerad.l.google.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,google-analytics.com,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,ssl.google-analytics.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,fundingchoicesmessages.google.com,🛡️ 广告拦截
-  - DOMAIN-SUFFIX,s0.2mdn.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,imasdk.googleapis.com,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,2mdn.net,🛡️ 广告拦截
+  - DOMAIN-SUFFIX,admob.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,ads.youtube.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,app-measurement.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,crashlytics.com,🛡️ 广告拦截
@@ -427,6 +442,9 @@ rules!:
   - DOMAIN-SUFFIX,ads.tiktok.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,ads-sg.tiktok.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,analytics.tiktok.com,🛡️ 广告拦截
+  - DOMAIN-KEYWORD,googleads,🛡️ 广告拦截
+  - DOMAIN-KEYWORD,doubleclick,🛡️ 广告拦截
+  - DOMAIN-KEYWORD,pagead,🛡️ 广告拦截
   - DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,🛡️ 广告拦截
   - DOMAIN-SUFFIX,pangolin.snssdk.com,🛡️ 广告拦截
@@ -476,8 +494,10 @@ rules!:
   - DOMAIN-SUFFIX,perplexity.ai,🚀 节点选择
   - DOMAIN-KEYWORD,vercel,🚀 节点选择
   - AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT-DROP
+  - AND,((NETWORK,UDP),(DST-PORT,443),(DOMAIN-SUFFIX,googlevideo.com)),REJECT-DROP
   - AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,category-ads-all)),REJECT-DROP
   - AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,awavenue-ads)),REJECT-DROP
+  - AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,adblock-ultra)),REJECT-DROP
   - RULE-SET,private,DIRECT
   - RULE-SET,category-httpdns-cn,🛡️ 广告拦截
   - RULE-SET,awavenue-ads,🛡️ 广告拦截

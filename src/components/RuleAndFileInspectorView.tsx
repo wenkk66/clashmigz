@@ -15,6 +15,7 @@ const QUICK_TEST_DOMAINS = [
   'chatgpt.com',
   'youtube.com',
   'ads.youtube.com',
+  'imasdk.googleapis.com',
   'analytics.tiktok.com',
   'sdk.e.qq.com',
   'tiktok.com',
