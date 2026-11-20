@@ -19,7 +19,7 @@ import { RepoDeployView } from './components/RepoDeployView';
 
 type ActiveTab = 'builder' | 'simulator' | 'inspector' | 'deploy';
 
-const STORAGE_KEY = 'clash_mi_override_workspace_v7';
+const STORAGE_KEY = 'clash_mi_override_workspace_v8';
 
 export default function App() {
   const [workspace, setWorkspace] = useState<ClashWorkspaceState>(() => {

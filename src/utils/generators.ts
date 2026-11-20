@@ -126,7 +126,12 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
   const youtubeEnabled = enabledRules.some((r) => r.providerName === 'youtube');
   if (youtubeEnabled) {
     // 拦截 YouTube QUIC (UDP 443)，强制走 TCP 提升稳定性与分流/广告域名嗅探命中率
-    rulesList.push(`AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),${adsGroupName}`);
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT-DROP');
+  }
+  const adsAllEnabled = enabledRules.some((r) => r.providerName === 'category-ads-all');
+  if (adsAllEnabled) {
+    // 阻断广告 SDK 通过 QUIC (UDP 443) 绕过规则拦截
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,category-ads-all)),REJECT-DROP');
   }
 
   for (const mod of enabledRules) {
@@ -167,13 +172,33 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
     const fakeIpRuleSets = ['private', 'cn-domain']
       .filter((name) => enabledProviderSet.has(name))
       .map((name) => `RULE-SET:${name}`);
+    const adDomainProviders = enabledRules
+      .filter(
+        (r) =>
+          r.category === 'reject' &&
+          ruleProvidersObj[r.providerName]?.behavior === 'domain'
+      )
+      .map((r) => r.providerName);
+    const adFakeIpRuleSets =
+      overwrite.dnsAdSinkhole !== false
+        ? adDomainProviders.map((name) => `RULE-SET:${name}`)
+        : [];
     const chinaPolicyRuleSets = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter((name) =>
       enabledProviderSet.has(name)
     );
-    const nameserverPolicy: Record<string, string[]> = {
-      'geosite:cn,private': [kernel.dohChina || 'https://dns.alidns.com/dns-query'],
-      'geosite:geolocation-!cn': [kernel.dohGlobal || 'https://1.1.1.1/dns-query'],
-    };
+    const nameserverPolicy: Record<string, string[]> = {};
+    if (overwrite.dnsAdSinkhole !== false) {
+      if (adDomainProviders.length > 0) {
+        nameserverPolicy[`RULE-SET:${adDomainProviders.join(',')}`] = ['rcode://success'];
+      }
+      nameserverPolicy['geosite:category-ads-all'] = ['rcode://success'];
+    }
+    nameserverPolicy['geosite:cn,private'] = [
+      kernel.dohChina || 'https://dns.alidns.com/dns-query',
+    ];
+    nameserverPolicy['geosite:geolocation-!cn'] = [
+      kernel.dohGlobal || 'https://1.1.1.1/dns-query',
+    ];
     if (chinaPolicyRuleSets.length > 0) {
       nameserverPolicy[`RULE-SET:${chinaPolicyRuleSets.join(',')}`] = [
         kernel.dohChina || 'https://dns.alidns.com/dns-query',
@@ -193,6 +218,7 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
         '+.msftconnecttest.com',
         '+.msftncsi.com',
         ...fakeIpRuleSets,
+        ...adFakeIpRuleSets,
       ],
       'default-nameserver': ['223.5.5.5', '119.29.29.29'],
       'proxy-server-nameserver': ['223.5.5.5', '119.29.29.29', kernel.dohChina || 'https://dns.alidns.com/dns-query'],
@@ -276,7 +302,11 @@ export function generateOverwriteJsString(state: ClashWorkspaceState): string {
 
   const youtubeEnabled = enabledRules.some((r) => r.providerName === 'youtube');
   if (youtubeEnabled) {
-    rulesList.push(`AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),${adsGroupName}`);
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT-DROP');
+  }
+  const adsAllEnabled = enabledRules.some((r) => r.providerName === 'category-ads-all');
+  if (adsAllEnabled) {
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,category-ads-all)),REJECT-DROP');
   }
 
   for (const mod of enabledRules) {
@@ -498,13 +528,30 @@ function main(config) {
     if (RULE_PROVIDERS['private']) fakeIpFilterList.push('RULE-SET:private');
     if (RULE_PROVIDERS['cn-domain']) fakeIpFilterList.push('RULE-SET:cn-domain');
 
+    var adDomainKeys = Object.keys(RULE_PROVIDERS).filter(function (k) {
+      var rp = RULE_PROVIDERS[k];
+      return (
+        rp &&
+        rp.behavior === 'domain' &&
+        (k.indexOf('ad') !== -1 || k.indexOf('httpdns') !== -1 || k === 'awavenue-ads' || k === 'cats-adrules' || k === 'anti-ad')
+      );
+    });
+
     var chinaPolicyProviders = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter(function (k) {
       return Boolean(RULE_PROVIDERS[k]);
     });
-    var dnsPolicy = {
-      'geosite:cn,private': [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}],
-      'geosite:geolocation-!cn': [${JSON.stringify(kernel.dohGlobal || 'https://1.1.1.1/dns-query')}],
-    };
+    var dnsPolicy = {};
+    if (${JSON.stringify(overwrite.dnsAdSinkhole !== false)}) {
+      for (var ak = 0; ak < adDomainKeys.length; ak++) {
+        fakeIpFilterList.push('RULE-SET:' + adDomainKeys[ak]);
+      }
+      if (adDomainKeys.length > 0) {
+        dnsPolicy['RULE-SET:' + adDomainKeys.join(',')] = ['rcode://success'];
+      }
+      dnsPolicy['geosite:category-ads-all'] = ['rcode://success'];
+    }
+    dnsPolicy['geosite:cn,private'] = [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}];
+    dnsPolicy['geosite:geolocation-!cn'] = [${JSON.stringify(kernel.dohGlobal || 'https://1.1.1.1/dns-query')}];
     if (chinaPolicyProviders.length > 0) {
       dnsPolicy['RULE-SET:' + chinaPolicyProviders.join(',')] = [${JSON.stringify(kernel.dohChina || 'https://dns.alidns.com/dns-query')}];
     }
@@ -548,6 +595,7 @@ export function validateYamlString(content: string): YamlValidationResult {
 
 export function generateWorkflowYaml(state: ClashWorkspaceState): string {
   const { github } = state;
+  const triggerBranches = Array.from(new Set([github.branch || 'main', 'main', 'master']));
 
   const summaryBlock = github.enableStepSummary
     ? `
@@ -568,7 +616,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '${github.branch}'
+${triggerBranches.map((b) => `      - '${b}'`).join('\n')}
     paths:
       - 'rules/**'
       - 'scripts/build-override.mjs'
@@ -579,31 +627,36 @@ permissions:
 jobs:
   sync-override:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout 仓库代码
         uses: actions/checkout@v4
+        with:
+          token: \${{ secrets.GITHUB_TOKEN }}
 
       - name: 配置 Node.js 运行环境
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: 安装依赖 (js-yaml)
-        run: npm install --no-audit --no-fund
-
-      - name: 合并 rules/*.list 到 YAML / JS 覆写模板并执行沙箱校验
+      - name: 合并 rules/*.list 到 YAML / JS 覆写模板并执行双模式沙箱校验（零依赖）
         run: node scripts/build-override.mjs
 ${summaryBlock}
       - name: 自动提交更新后的覆写模板
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add override/
-          if git diff --staged --quiet; then
-            echo "覆写模板无实质变更，跳过提交。"
-          else
+          if [ -n "$(git status --porcelain override/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add override/
             git commit -m "${github.commitMessage}"
-            git push
+            git pull --rebase origin "\${{ github.ref_name }}" || true
+            if ! git push; then
+              echo "::error::git push 失败，请前往 GitHub 仓库 Settings -> Actions -> General -> Workflow permissions 选择 Read and write permissions。"
+              exit 1
+            fi
+          else
+            echo "覆写模板无实质变更，跳过提交。"
           fi
 `;
 }
@@ -619,8 +672,8 @@ export function generateBuildScript(state: ClashWorkspaceState): string {
 import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
-import { dump as yamlDump, load as yamlLoad } from 'js-yaml';
 
+// 纯 Node.js 内置模块实现（零 npm 外部依赖，彻底避免 GitHub Actions npm install 报错）
 const YAML_OVERRIDE_PATH = path.resolve('override/diversion.yaml');
 const JS_OVERRIDE_PATH = path.resolve('override/clash-mi-override.js');
 const REPORT_PATH = path.join(process.env.RUNNER_TEMP || os.tmpdir(), 'sync-report.md');
@@ -646,47 +699,101 @@ function readCustomRules(filePath, target) {
     });
 }
 
+function unquoteYamlScalar(raw) {
+  const s = raw.trim();
+  if ((s.startsWith("'") && s.endsWith("'")) || (s.startsWith('"') && s.endsWith('"'))) {
+    return s.slice(1, -1);
+  }
+  return s;
+}
+
+function formatYamlListItem(val) {
+  const needsQuotes =
+    /^[*!&@%\`|>?{}\\[\\]]/.test(val) || val.includes(': ') || val.includes(' #');
+  return needsQuotes ? \`  - '\${val.replace(/'/g, "''")}'\` : \`  - \${val}\`;
+}
+
+function syncYamlRulesSection(rawYaml, customMerged) {
+  const normalized = rawYaml.replace(/\\r\\n/g, '\\n');
+  if (/^\\t+/m.test(normalized)) {
+    throw new Error('YAML 缩进包含 Tab 字符，请统一使用空格');
+  }
+  if (!/^proxy-groups!?:/m.test(normalized)) {
+    throw new Error('YAML 缺少 proxy-groups 配置块');
+  }
+  const rulesHeaderMatch = normalized.match(/^rules!?:\\s*$/m);
+  if (!rulesHeaderMatch || typeof rulesHeaderMatch.index !== 'number') {
+    throw new Error('YAML 缺少 rules / rules! 配置块');
+  }
+
+  const headerEnd = rulesHeaderMatch.index + rulesHeaderMatch[0].length;
+  const beforeRules = normalized.slice(0, headerEnd);
+  const afterHeader = normalized.slice(headerEnd);
+  const nextTopKeyMatch = afterHeader.match(/\\n[a-zA-Z0-9_-]+!?:\\s*/);
+  const rulesBlock = nextTopKeyMatch ? afterHeader.slice(0, nextTopKeyMatch.index) : afterHeader;
+  const trailingSection = nextTopKeyMatch ? afterHeader.slice(nextTopKeyMatch.index) : '';
+
+  const currentRules = rulesBlock
+    .split('\\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('- '))
+    .map((line) => unquoteYamlScalar(line.slice(2)));
+
+  const staticRules = currentRules.filter(
+    (r) =>
+      r.startsWith('AND,') ||
+      r.startsWith('RULE-SET,') ||
+      r.startsWith('GEOIP,') ||
+      r.startsWith('MATCH,')
+  );
+  const nextRules = [...customMerged, ...staticRules];
+
+  // 校验所有 RULE-SET 引用的 provider 均已定义
+  const declaredProviders = new Set();
+  const rpMatch = beforeRules.match(/^rule-providers!?:\\n([\\s\\S]*?)(?=^[a-zA-Z0-9_-]+!?:|(?![\\s\\S]))/m);
+  if (rpMatch) {
+    for (const line of rpMatch[1].split('\\n')) {
+      const m = line.match(/^  ([a-zA-Z0-9_-]+):\\s*$/);
+      if (m) declaredProviders.add(m[1]);
+    }
+  }
+  if (declaredProviders.size > 0) {
+    for (const r of nextRules) {
+      const m = r.match(/^RULE-SET,([^,]+),/);
+      if (m && !declaredProviders.has(m[1])) {
+        throw new Error(\`RULE-SET 引用了未定义的 provider: \${m[1]}\`);
+      }
+    }
+  }
+
+  const changed = JSON.stringify(currentRules) !== JSON.stringify(nextRules);
+  const nextContent =
+    beforeRules +
+    '\\n' +
+    nextRules.map(formatYamlListItem).join('\\n') +
+    (trailingSection || '\\n');
+
+  return { changed, nextContent, count: nextRules.length };
+}
+
 function main() {
   const customReject = readCustomRules(path.resolve('rules/custom-reject.list'), ADS_GROUP);
   const customDirect = readCustomRules(path.resolve('rules/custom-direct.list'), 'DIRECT');
   const customProxy = readCustomRules(path.resolve('rules/custom-proxy.list'), PRIMARY_GROUP);
   const customMerged = [...customReject, ...customDirect, ...customProxy];
 
-  // 1. 更新并校验 YAML 覆写模板（仅在内容实际变化时写入，避免无效时间戳提交）
+  // 1. 零依赖更新并校验 YAML 覆写模板
   let yamlRulesCount = 0;
   if (fs.existsSync(YAML_OVERRIDE_PATH)) {
     const rawYaml = fs.readFileSync(YAML_OVERRIDE_PATH, 'utf8');
-    const parsed = yamlLoad(rawYaml);
-    const rulesKey = Object.prototype.hasOwnProperty.call(parsed, 'rules!') ? 'rules!' : 'rules';
-    const currentRules = parsed[rulesKey] || [];
-    const staticRules = currentRules.filter(
-      (r) =>
-        r.startsWith('AND,') ||
-        r.startsWith('RULE-SET,') ||
-        r.startsWith('GEOIP,') ||
-        r.startsWith('MATCH,')
-    );
-    const nextRules = [...customMerged, ...staticRules];
-    yamlRulesCount = nextRules.length;
-
-    if (JSON.stringify(currentRules) !== JSON.stringify(nextRules)) {
-      parsed[rulesKey] = nextRules;
-      const header = [
-        '# ============================================================================',
-        '# Clash Mi 全局分流覆写模板 (YAML Overwrite)',
-        \`# 仓库: ${state.github.owner}/${state.github.repo} (${state.github.branch})\`,
-        '# ============================================================================',
-        '',
-      ].join('\\n');
-      fs.writeFileSync(
-        YAML_OVERRIDE_PATH,
-        header + yamlDump(parsed, { indent: 2, lineWidth: 120, noRefs: true }),
-        'utf8'
-      );
+    const result = syncYamlRulesSection(rawYaml, customMerged);
+    yamlRulesCount = result.count;
+    if (result.changed) {
+      fs.writeFileSync(YAML_OVERRIDE_PATH, result.nextContent, 'utf8');
     }
   }
 
-  // 2. 更新并沙箱测试 JS 覆写脚本
+  // 2. 更新并双模式沙箱测试 JS 覆写脚本
   let jsStatus = '未启用';
   if (fs.existsSync(JS_OVERRIDE_PATH)) {
     let jsContent = fs.readFileSync(JS_OVERRIDE_PATH, 'utf8');
@@ -708,10 +815,11 @@ function main() {
       }
     }
 
-    // 使用沙箱执行 main() 干跑验证：验证清洗节点、节点列表可见性、自动选择、故障转移、空组剔除与去广告规则
     const sandbox = {};
     vm.createContext(sandbox);
     vm.runInContext(jsContent, sandbox);
+
+    // 干跑 A: inline proxies 订阅模式
     const dryRun = sandbox.main({
       proxies: [
         { name: '🇭🇰 香港 01 [10Gbps]', type: 'ss', server: '1.1.1.1', port: 443 },
@@ -721,6 +829,11 @@ function main() {
         { name: '剩余流量：500 GB', type: 'ss', server: '127.0.0.1', port: 80 },
       ],
     });
+    // 干跑 B: proxy-providers 订阅模式
+    const providerRun = sandbox.main({
+      'proxy-providers': { sub1: { type: 'http', url: 'https://example.com' } },
+    });
+
     const hasFailover = dryRun['proxy-groups'].some((g) => g.type === 'fallback');
     const hasUrlTest = dryRun['proxy-groups'].some((g) => g.type === 'url-test');
     const autoIsFirst = Boolean(dryRun['proxy-groups'][0] && dryRun['proxy-groups'][0].type === 'url-test');
@@ -728,7 +841,21 @@ function main() {
     const hasDirectNodesInSelect = Boolean(
       selectGroup && selectGroup.proxies.some((p) => p.includes('10Gbps')) && selectGroup.proxies.some((p) => p.includes('GB'))
     );
-    jsStatus = \`通过 (\${dryRun['proxy-groups'].length} 组 / \${dryRun.rules.length} 规则 / 自动测速首位:\${autoIsFirst && hasUrlTest} / 故障转移:\${hasFailover} / 节点列表可见:\${hasDirectNodesInSelect})\`;
+    const providerSelect = providerRun['proxy-groups'].find((g) => g.name.includes('节点选择'));
+    const providerOk = Boolean(providerSelect && providerSelect['include-all']);
+    const hasDnsSinkhole = Boolean(
+      dryRun.dns &&
+      dryRun.dns['nameserver-policy'] &&
+      Object.values(dryRun.dns['nameserver-policy']).some(
+        (v) => Array.isArray(v) && v.includes('rcode://success')
+      )
+    );
+
+    if (!hasUrlTest || !hasFailover || !hasDirectNodesInSelect || !providerOk) {
+      throw new Error('JS 覆写脚本核心策略校验未通过');
+    }
+
+    jsStatus = \`通过 (\${dryRun['proxy-groups'].length} 组 / \${dryRun.rules.length} 规则 / 自动测速首位:\${autoIsFirst} / 节点列表可见:\${hasDirectNodesInSelect} / DNS广告黑洞:\${hasDnsSinkhole})\`;
   }
 
   const report = [
@@ -737,7 +864,7 @@ function main() {
     \`- **同步时间**: \${new Date().toISOString()}\`,
     \`- **自定义规则合并**: 拦截 \${customReject.length} 条 / 直连 \${customDirect.length} 条 / 代理 \${customProxy.length} 条\`,
     \`- **YAML 覆写规则总数**: \${yamlRulesCount} 条\`,
-    \`- **JS 覆写脚本干跑校验**: \${jsStatus}\`,
+    \`- **JS 覆写脚本双模式干跑校验**: \${jsStatus}\`,
   ].join('\\n');
 
   fs.writeFileSync(REPORT_PATH, report + '\\n', 'utf8');

@@ -5,6 +5,7 @@ export interface OverwriteSettings {
   skipEmptyRegionGroups: boolean;
   stripExcludedProxies: boolean;
   overwriteDns: boolean;
+  dnsAdSinkhole: boolean;
   overwriteSniffer: boolean;
 }
 

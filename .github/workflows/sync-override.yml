@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'master'
     paths:
       - 'rules/**'
       - 'scripts/build-override.mjs'
@@ -18,19 +19,20 @@ permissions:
 jobs:
   sync-override:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout 仓库代码
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 配置 Node.js 运行环境
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: 安装依赖 (js-yaml)
-        run: npm install --no-audit --no-fund
-
-      - name: 合并 rules/*.list 到 YAML / JS 覆写模板并执行沙箱校验
+      - name: 合并 rules/*.list 到 YAML / JS 覆写模板并执行双模式沙箱校验（零依赖）
         run: node scripts/build-override.mjs
 
       - name: 输出规则与模板同步摘要
@@ -41,12 +43,16 @@ jobs:
           fi
       - name: 自动提交更新后的覆写模板
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add override/
-          if git diff --staged --quiet; then
-            echo "覆写模板无实质变更，跳过提交。"
-          else
+          if [ -n "$(git status --porcelain override/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add override/
             git commit -m "chore(override): sync clash-mi diversion rules and templates"
-            git push
+            git pull --rebase origin "${{ github.ref_name }}" || true
+            if ! git push; then
+              echo "::error::git push 失败，请前往 GitHub 仓库 Settings -> Actions -> General -> Workflow permissions 选择 Read and write permissions。"
+              exit 1
+            fi
+          else
+            echo "覆写模板无实质变更，跳过提交。"
           fi

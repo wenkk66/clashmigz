@@ -303,6 +303,21 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
             <label className="inline-flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
               <input
                 type="checkbox"
+                checked={state.overwrite.dnsAdSinkhole !== false}
+                disabled={!state.overwrite.overwriteDns}
+                onChange={(e) =>
+                  onChange({
+                    ...state,
+                    overwrite: { ...state.overwrite, dnsAdSinkhole: e.target.checked },
+                  })
+                }
+                className="h-4 w-4 rounded border-slate-300 text-blue-600 disabled:opacity-40"
+              />
+              DNS 层广告黑洞 (rcode://success，拦截前先阻断解析)
+            </label>
+            <label className="inline-flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+              <input
+                type="checkbox"
                 checked={state.overwrite.overwriteSniffer}
                 onChange={(e) =>
                   onChange({
@@ -832,9 +847,9 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
                   mod.tier === 'light'
                     ? '轻量必备'
                     : mod.tier === 'balanced'
-                      ? '均衡增强'
+                      ? '均衡强效'
                       : mod.tier === 'ultra'
-                        ? '强力满血'
+                        ? '极客满血'
                         : null;
 
                 return (

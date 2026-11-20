@@ -374,20 +374,28 @@ const RULE_PROVIDERS = {
     "path": "./rule_providers/category-ads-all.mrs",
     "interval": 86400
   },
+  "adblock-ultra": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.mrs",
+    "path": "./rule_providers/adblock-ultra.mrs",
+    "interval": 86400
+  },
+  "cats-adrules": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "text",
+    "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules_domainset.txt",
+    "path": "./rule_providers/cats-adrules.txt",
+    "interval": 86400
+  },
   "adguard-base": {
     "type": "http",
     "behavior": "domain",
     "format": "yaml",
     "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdGuardSDNSFilter/AdGuardSDNSFilter_Domain.yaml",
     "path": "./rule_providers/adguard-base.yaml",
-    "interval": 86400
-  },
-  "mobile-ad-enhance": {
-    "type": "http",
-    "behavior": "domain",
-    "format": "yaml",
-    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising_Domain.yaml",
-    "path": "./rule_providers/mobile-ad-enhance.yaml",
     "interval": 86400
   },
   "ai-non-cn": {
@@ -529,21 +537,54 @@ const RULES = [
   "DOMAIN-SUFFIX,s0.2mdn.net,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,ads.youtube.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,app-measurement.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,crashlytics.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,firebaseinappmessaging.googleapis.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,pangolin.snssdk.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,pglstatp-toutiao.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,toblog.ctobsnssdk.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,gdt.qq.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,adsmind.gdtimg.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,pgdt.gtimg.cn,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,tangram.e.qq.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,mobads.baidu.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,mobads-logs.baidu.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,pos.baidu.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,e.kuaishou.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,open.e.kuaishou.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,umeng.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,umengcloud.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,ad.xiaomi.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,sdkconfig.ad.xiaomi.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,data.mistat.xiaomi.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,ads.heytapmobi.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,adx.ads.oppomobi.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,stsdk.vivo.com.cn,🛡️ 广告拦截",
   "DOMAIN-KEYWORD,adservice,🛡️ 广告拦截",
   "DOMAIN-KEYWORD,pangolin-sdk-toutiao,🛡️ 广告拦截",
+  "IP-CIDR,203.107.1.0/24,🛡️ 广告拦截,no-resolve",
+  "IP-CIDR,119.29.29.98/32,🛡️ 广告拦截,no-resolve",
+  "IP-CIDR,119.29.29.99/32,🛡️ 广告拦截,no-resolve",
+  "IP-CIDR,180.76.76.200/32,🛡️ 广告拦截,no-resolve",
+  "IP-CIDR,101.226.103.106/32,🛡️ 广告拦截,no-resolve",
+  "IP-CIDR,101.226.212.27/32,🛡️ 广告拦截,no-resolve",
+  "IP-CIDR,117.185.228.108/32,🛡️ 广告拦截,no-resolve",
   "DOMAIN-SUFFIX,pt.example.edu.cn,DIRECT",
   "DOMAIN-SUFFIX,local,DIRECT",
   "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve",
   "DOMAIN-SUFFIX,cursor.sh,🚀 节点选择",
   "DOMAIN-SUFFIX,perplexity.ai,🚀 节点选择",
   "DOMAIN-KEYWORD,vercel,🚀 节点选择",
-  "AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),🛡️ 广告拦截",
+  "AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT-DROP",
+  "AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,category-ads-all)),REJECT-DROP",
   "RULE-SET,private,DIRECT",
   "RULE-SET,category-httpdns-cn,🛡️ 广告拦截",
   "RULE-SET,awavenue-ads,🛡️ 广告拦截",
   "RULE-SET,category-ads-all,🛡️ 广告拦截",
+  "RULE-SET,adblock-ultra,🛡️ 广告拦截",
+  "RULE-SET,cats-adrules,🛡️ 广告拦截",
   "RULE-SET,adguard-base,🛡️ 广告拦截",
-  "RULE-SET,mobile-ad-enhance,🛡️ 广告拦截",
   "RULE-SET,ai-non-cn,🤖 AI 服务专属",
   "RULE-SET,google-gemini,🤖 AI 服务专属",
   "RULE-SET,tiktok,🎵 TikTok 专属",
@@ -726,13 +767,30 @@ function main(config) {
     if (RULE_PROVIDERS['private']) fakeIpFilterList.push('RULE-SET:private');
     if (RULE_PROVIDERS['cn-domain']) fakeIpFilterList.push('RULE-SET:cn-domain');
 
+    var adDomainKeys = Object.keys(RULE_PROVIDERS).filter(function (k) {
+      var rp = RULE_PROVIDERS[k];
+      return (
+        rp &&
+        rp.behavior === 'domain' &&
+        (k.indexOf('ad') !== -1 || k.indexOf('httpdns') !== -1 || k === 'awavenue-ads' || k === 'cats-adrules' || k === 'anti-ad')
+      );
+    });
+
     var chinaPolicyProviders = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter(function (k) {
       return Boolean(RULE_PROVIDERS[k]);
     });
-    var dnsPolicy = {
-      'geosite:cn,private': ["https://dns.alidns.com/dns-query"],
-      'geosite:geolocation-!cn': ["https://1.1.1.1/dns-query"],
-    };
+    var dnsPolicy = {};
+    if (true) {
+      for (var ak = 0; ak < adDomainKeys.length; ak++) {
+        fakeIpFilterList.push('RULE-SET:' + adDomainKeys[ak]);
+      }
+      if (adDomainKeys.length > 0) {
+        dnsPolicy['RULE-SET:' + adDomainKeys.join(',')] = ['rcode://success'];
+      }
+      dnsPolicy['geosite:category-ads-all'] = ['rcode://success'];
+    }
+    dnsPolicy['geosite:cn,private'] = ["https://dns.alidns.com/dns-query"];
+    dnsPolicy['geosite:geolocation-!cn'] = ["https://1.1.1.1/dns-query"];
     if (chinaPolicyProviders.length > 0) {
       dnsPolicy['RULE-SET:' + chinaPolicyProviders.join(',')] = ["https://dns.alidns.com/dns-query"];
     }

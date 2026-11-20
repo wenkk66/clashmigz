@@ -15,32 +15,34 @@ export const AD_BLOCK_LEVEL_PRESETS: Record<
   light: {
     title: '轻量省内存',
     deviceHint: '老旧安卓机 / 低内存路由器 (≤2GB RAM)',
-    summary: '仅启用 3 个高频二进制 .mrs 规则（HTTPDNS + 秋风广告 + MetaCubeX），极低内存占用。',
+    summary: '仅启用 3 个二进制 .mrs 规则（HTTPDNS + 秋风广告 + MetaCubeX），极低内存占用。',
     enabledRuleIds: ['rule-httpdns', 'rule-awavenue', 'rule-ads'],
   },
   balanced: {
-    title: '均衡推荐',
+    title: '均衡强效',
     deviceHint: '主流安卓手机 / 日常平板（默认推荐）',
-    summary: '在轻量基础上叠加 AdGuard 基础规则（SDNS）与移动端 App 广告增强，兼顾拦截率与流畅度。',
+    summary: '启用 6 大拦截源：叠加 217heidai AdGuard+EasyList 10万+ .mrs、Cats-Team 国内开屏/PCDN 与 AdGuard SDNS。',
     enabledRuleIds: [
       'rule-httpdns',
       'rule-awavenue',
       'rule-ads',
+      'rule-adblock-ultra',
+      'rule-cats-adrules',
       'rule-adguard-base',
-      'rule-mobile-ad-enhance',
     ],
   },
   ultra: {
-    title: '强力满血',
-    deviceHint: '旗舰手机 / 电脑 / 软路由（高性能设备）',
-    summary: '全量激活 217heidai AdGuard+EasyList 10万+ .mrs 合并库与 anti-AD，实现最高级别去广告覆盖。',
+    title: '极客满血',
+    deviceHint: '旗舰手机 / 电脑 / 软路由（8 引擎全开）',
+    summary: '在均衡强效基础上再叠加 blackmatrix7 移动端行为库与 anti-AD，实现最高级别全网广告与遥测拦截。',
     enabledRuleIds: [
       'rule-httpdns',
       'rule-awavenue',
       'rule-ads',
+      'rule-adblock-ultra',
+      'rule-cats-adrules',
       'rule-adguard-base',
       'rule-mobile-ad-enhance',
-      'rule-adblock-ultra',
       'rule-antiad',
     ],
   },
@@ -70,6 +72,7 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
     skipEmptyRegionGroups: true,
     stripExcludedProxies: true,
     overwriteDns: true,
+    dnsAdSinkhole: true,
     overwriteSniffer: true,
   },
   groups: [
@@ -454,6 +457,36 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       sampleDomains: ['doubleclick.net', 'googlesyndication.com', 'umeng.com'],
     },
     {
+      id: 'rule-adblock-ultra',
+      label: 'AdGuard + EasyList 10万+聚合库（217heidai 二进制 .mrs）',
+      category: 'reject',
+      tier: 'balanced',
+      providerName: 'adblock-ultra',
+      behavior: 'domain',
+      mrsBehavior: 'domain',
+      mrsUrl: 'https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.mrs',
+      yamlUrl: 'https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: true,
+      sampleDomains: ['pagead2.googlesyndication.com', 'tpc.googlesyndication.com'],
+    },
+    {
+      id: 'rule-cats-adrules',
+      label: 'Cats-Team AdRules（国内 App 开屏广告 / PCDN / 隐私追踪）',
+      category: 'reject',
+      tier: 'balanced',
+      providerName: 'cats-adrules',
+      behavior: 'domain',
+      mrsBehavior: 'domain',
+      mrsUrl: 'https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules_domainset.txt',
+      yamlUrl: 'https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules_domainset.txt',
+      targetGroup: '🛡️ 广告拦截',
+      interval: 86400,
+      enabled: true,
+      sampleDomains: ['pgdt.gtimg.cn', 'pglstatp-toutiao.com', 'adsmind.gdtimg.com'],
+    },
+    {
       id: 'rule-adguard-base',
       label: 'AdGuard 基础拦截规则（AdGuard SDNS Filter）',
       category: 'reject',
@@ -470,9 +503,9 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
     },
     {
       id: 'rule-mobile-ad-enhance',
-      label: '移动端 App 广告增强（blackmatrix7 Advertising）',
+      label: '移动端 App 广告行为增强（blackmatrix7 Advertising）',
       category: 'reject',
-      tier: 'balanced',
+      tier: 'ultra',
       providerName: 'mobile-ad-enhance',
       behavior: 'classical',
       mrsBehavior: 'domain',
@@ -480,27 +513,12 @@ export const INITIAL_WORKSPACE_STATE: ClashWorkspaceState = {
       yamlUrl: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising.yaml',
       targetGroup: '🛡️ 广告拦截',
       interval: 86400,
-      enabled: true,
+      enabled: false,
       sampleDomains: ['adx.gdt.qq.com', 'mobads.baidu.com', 'ads-api.tiktok.com'],
     },
     {
-      id: 'rule-adblock-ultra',
-      label: 'AdGuard + EasyList 强力全量库（217heidai .mrs）',
-      category: 'reject',
-      tier: 'ultra',
-      providerName: 'adblock-ultra',
-      behavior: 'domain',
-      mrsBehavior: 'domain',
-      mrsUrl: 'https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.mrs',
-      yamlUrl: 'https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml',
-      targetGroup: '🛡️ 广告拦截',
-      interval: 86400,
-      enabled: false,
-      sampleDomains: ['pagead2.googlesyndication.com', 'tpc.googlesyndication.com'],
-    },
-    {
       id: 'rule-antiad',
-      label: 'anti-AD 深度广告与隐私追踪库（高性能设备推荐）',
+      label: 'anti-AD 深度广告与隐私追踪库（极客满血）',
       category: 'reject',
       tier: 'ultra',
       providerName: 'anti-ad',
@@ -751,7 +769,8 @@ DOMAIN-KEYWORD,vercel`,
 DOMAIN-SUFFIX,pt.example.edu.cn
 DOMAIN-SUFFIX,local
 IP-CIDR,100.64.0.0/10,no-resolve`,
-    rejectList: `# 自定义去广告、YouTube 广告追踪与隐私遥测拦截规则
+    rejectList: `# 自定义强力去广告、YouTube/Google 追踪、国内 App 开屏 SDK 与 HTTPDNS IP 封堵
+# 1. YouTube / Google 广告与遥测
 DOMAIN-SUFFIX,doubleclick.net
 DOMAIN-SUFFIX,googlesyndication.com
 DOMAIN-SUFFIX,googleadservices.com
@@ -760,8 +779,41 @@ DOMAIN-SUFFIX,google-analytics.com
 DOMAIN-SUFFIX,s0.2mdn.net
 DOMAIN-SUFFIX,ads.youtube.com
 DOMAIN-SUFFIX,app-measurement.com
+DOMAIN-SUFFIX,crashlytics.com
+DOMAIN-SUFFIX,firebaseinappmessaging.googleapis.com
+# 2. 国内 App 开屏广告联盟 (穿山甲 / 广点通 / 百度 / 快手 / 小米 / OPPO / vivo / 友盟)
+DOMAIN-SUFFIX,pangolin-sdk-toutiao.com
+DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com
+DOMAIN-SUFFIX,pangolin.snssdk.com
+DOMAIN-SUFFIX,pglstatp-toutiao.com
+DOMAIN-SUFFIX,toblog.ctobsnssdk.com
+DOMAIN-SUFFIX,gdt.qq.com
+DOMAIN-SUFFIX,adsmind.gdtimg.com
+DOMAIN-SUFFIX,pgdt.gtimg.cn
+DOMAIN-SUFFIX,tangram.e.qq.com
+DOMAIN-SUFFIX,mobads.baidu.com
+DOMAIN-SUFFIX,mobads-logs.baidu.com
+DOMAIN-SUFFIX,pos.baidu.com
+DOMAIN-SUFFIX,e.kuaishou.com
+DOMAIN-SUFFIX,open.e.kuaishou.com
+DOMAIN-SUFFIX,umeng.com
+DOMAIN-SUFFIX,umengcloud.com
+DOMAIN-SUFFIX,ad.xiaomi.com
+DOMAIN-SUFFIX,sdkconfig.ad.xiaomi.com
+DOMAIN-SUFFIX,data.mistat.xiaomi.com
+DOMAIN-SUFFIX,ads.heytapmobi.com
+DOMAIN-SUFFIX,adx.ads.oppomobi.com
+DOMAIN-SUFFIX,stsdk.vivo.com.cn
 DOMAIN-KEYWORD,adservice
-DOMAIN-KEYWORD,pangolin-sdk-toutiao`,
+DOMAIN-KEYWORD,pangolin-sdk-toutiao
+# 3. 封堵国内 App HTTPDNS 直连 IP (防止绕过域名去广告)
+IP-CIDR,203.107.1.0/24,no-resolve
+IP-CIDR,119.29.29.98/32,no-resolve
+IP-CIDR,119.29.29.99/32,no-resolve
+IP-CIDR,180.76.76.200/32,no-resolve
+IP-CIDR,101.226.103.106/32,no-resolve
+IP-CIDR,101.226.212.27/32,no-resolve
+IP-CIDR,117.185.228.108/32,no-resolve`,
   },
 };
 

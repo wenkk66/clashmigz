@@ -1,4 +1,5 @@
-# 自定义去广告、YouTube 广告追踪与隐私遥测拦截规则
+# 自定义强力去广告、YouTube/Google 追踪、国内 App 开屏 SDK 与 HTTPDNS IP 封堵
+# 1. YouTube / Google 广告与遥测
 DOMAIN-SUFFIX,doubleclick.net
 DOMAIN-SUFFIX,googlesyndication.com
 DOMAIN-SUFFIX,googleadservices.com
@@ -7,5 +8,38 @@ DOMAIN-SUFFIX,google-analytics.com
 DOMAIN-SUFFIX,s0.2mdn.net
 DOMAIN-SUFFIX,ads.youtube.com
 DOMAIN-SUFFIX,app-measurement.com
+DOMAIN-SUFFIX,crashlytics.com
+DOMAIN-SUFFIX,firebaseinappmessaging.googleapis.com
+# 2. 国内 App 开屏广告联盟 (穿山甲 / 广点通 / 百度 / 快手 / 小米 / OPPO / vivo / 友盟)
+DOMAIN-SUFFIX,pangolin-sdk-toutiao.com
+DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com
+DOMAIN-SUFFIX,pangolin.snssdk.com
+DOMAIN-SUFFIX,pglstatp-toutiao.com
+DOMAIN-SUFFIX,toblog.ctobsnssdk.com
+DOMAIN-SUFFIX,gdt.qq.com
+DOMAIN-SUFFIX,adsmind.gdtimg.com
+DOMAIN-SUFFIX,pgdt.gtimg.cn
+DOMAIN-SUFFIX,tangram.e.qq.com
+DOMAIN-SUFFIX,mobads.baidu.com
+DOMAIN-SUFFIX,mobads-logs.baidu.com
+DOMAIN-SUFFIX,pos.baidu.com
+DOMAIN-SUFFIX,e.kuaishou.com
+DOMAIN-SUFFIX,open.e.kuaishou.com
+DOMAIN-SUFFIX,umeng.com
+DOMAIN-SUFFIX,umengcloud.com
+DOMAIN-SUFFIX,ad.xiaomi.com
+DOMAIN-SUFFIX,sdkconfig.ad.xiaomi.com
+DOMAIN-SUFFIX,data.mistat.xiaomi.com
+DOMAIN-SUFFIX,ads.heytapmobi.com
+DOMAIN-SUFFIX,adx.ads.oppomobi.com
+DOMAIN-SUFFIX,stsdk.vivo.com.cn
 DOMAIN-KEYWORD,adservice
 DOMAIN-KEYWORD,pangolin-sdk-toutiao
+# 3. 封堵国内 App HTTPDNS 直连 IP (防止绕过域名去广告)
+IP-CIDR,203.107.1.0/24,no-resolve
+IP-CIDR,119.29.29.98/32,no-resolve
+IP-CIDR,119.29.29.99/32,no-resolve
+IP-CIDR,180.76.76.200/32,no-resolve
+IP-CIDR,101.226.103.106/32,no-resolve
+IP-CIDR,101.226.212.27/32,no-resolve
+IP-CIDR,117.185.228.108/32,no-resolve
