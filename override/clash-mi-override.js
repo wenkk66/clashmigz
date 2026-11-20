@@ -398,6 +398,14 @@ const RULE_PROVIDERS = {
     "path": "./rule_providers/adguard-base.yaml",
     "interval": 86400
   },
+  "privacy-domain": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "yaml",
+    "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy_Domain.yaml",
+    "path": "./rule_providers/privacy-domain.yaml",
+    "interval": 86400
+  },
   "ai-non-cn": {
     "type": "http",
     "behavior": "domain",
@@ -528,17 +536,23 @@ const RULE_PROVIDERS = {
   }
 };
 
+const AD_DOMAIN_PROVIDERS = ["category-httpdns-cn","awavenue-ads","category-ads-all","adblock-ultra","cats-adrules","adguard-base","privacy-domain"];
+
 const RULES = [
   "DOMAIN-SUFFIX,doubleclick.net,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,googlesyndication.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,googleadservices.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,adservice.google.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,google-analytics.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,fundingchoicesmessages.google.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,s0.2mdn.net,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,ads.youtube.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,app-measurement.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,crashlytics.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,firebaseinappmessaging.googleapis.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,ads.tiktok.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,ads-sg.tiktok.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,analytics.tiktok.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,pangolin.snssdk.com,🛡️ 广告拦截",
@@ -548,19 +562,30 @@ const RULES = [
   "DOMAIN-SUFFIX,adsmind.gdtimg.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,pgdt.gtimg.cn,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,tangram.e.qq.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,sdk.e.qq.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,ad.qq.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,btrace.qq.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,tpns.qq.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,tmead.y.qq.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,mobads.baidu.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,mobads-logs.baidu.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,pos.baidu.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,als.baidu.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,e.kuaishou.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,open.e.kuaishou.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,gdfp.gifshow.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,umeng.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,umengcloud.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,alog.umeng.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,ad.xiaomi.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,sdkconfig.ad.xiaomi.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,data.mistat.xiaomi.com,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,tracking.miui.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,ads.heytapmobi.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,adx.ads.oppomobi.com,🛡️ 广告拦截",
   "DOMAIN-SUFFIX,stsdk.vivo.com.cn,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,adreq.vivo.com.cn,🛡️ 广告拦截",
+  "DOMAIN-SUFFIX,log-upload-os.hoyoverse.com,🛡️ 广告拦截",
   "DOMAIN-KEYWORD,adservice,🛡️ 广告拦截",
   "DOMAIN-KEYWORD,pangolin-sdk-toutiao,🛡️ 广告拦截",
   "IP-CIDR,203.107.1.0/24,🛡️ 广告拦截,no-resolve",
@@ -578,6 +603,7 @@ const RULES = [
   "DOMAIN-KEYWORD,vercel,🚀 节点选择",
   "AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT-DROP",
   "AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,category-ads-all)),REJECT-DROP",
+  "AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,awavenue-ads)),REJECT-DROP",
   "RULE-SET,private,DIRECT",
   "RULE-SET,category-httpdns-cn,🛡️ 广告拦截",
   "RULE-SET,awavenue-ads,🛡️ 广告拦截",
@@ -585,6 +611,7 @@ const RULES = [
   "RULE-SET,adblock-ultra,🛡️ 广告拦截",
   "RULE-SET,cats-adrules,🛡️ 广告拦截",
   "RULE-SET,adguard-base,🛡️ 广告拦截",
+  "RULE-SET,privacy-domain,🛡️ 广告拦截",
   "RULE-SET,ai-non-cn,🤖 AI 服务专属",
   "RULE-SET,google-gemini,🤖 AI 服务专属",
   "RULE-SET,tiktok,🎵 TikTok 专属",
@@ -767,13 +794,9 @@ function main(config) {
     if (RULE_PROVIDERS['private']) fakeIpFilterList.push('RULE-SET:private');
     if (RULE_PROVIDERS['cn-domain']) fakeIpFilterList.push('RULE-SET:cn-domain');
 
-    var adDomainKeys = Object.keys(RULE_PROVIDERS).filter(function (k) {
+    var adDomainKeys = AD_DOMAIN_PROVIDERS.filter(function (k) {
       var rp = RULE_PROVIDERS[k];
-      return (
-        rp &&
-        rp.behavior === 'domain' &&
-        (k.indexOf('ad') !== -1 || k.indexOf('httpdns') !== -1 || k === 'awavenue-ads' || k === 'cats-adrules' || k === 'anti-ad')
-      );
+      return Boolean(rp && rp.behavior === 'domain');
     });
 
     var chinaPolicyProviders = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter(function (k) {

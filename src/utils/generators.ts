@@ -133,6 +133,12 @@ export function buildOverwriteYamlObject(state: ClashWorkspaceState): Record<str
     // 阻断广告 SDK 通过 QUIC (UDP 443) 绕过规则拦截
     rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,category-ads-all)),REJECT-DROP');
   }
+  const awavenueEnabled =
+    enabledRules.some((r) => r.providerName === 'awavenue-ads') &&
+    ruleProvidersObj['awavenue-ads']?.behavior === 'domain';
+  if (awavenueEnabled) {
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,awavenue-ads)),REJECT-DROP');
+  }
 
   for (const mod of enabledRules) {
     const resolvedTarget =
@@ -308,6 +314,20 @@ export function generateOverwriteJsString(state: ClashWorkspaceState): string {
   if (adsAllEnabled) {
     rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,category-ads-all)),REJECT-DROP');
   }
+  const awavenueEnabled =
+    enabledRules.some((r) => r.providerName === 'awavenue-ads') &&
+    ruleProvidersObj['awavenue-ads']?.behavior === 'domain';
+  if (awavenueEnabled) {
+    rulesList.push('AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,awavenue-ads)),REJECT-DROP');
+  }
+
+  const adDomainProviders = enabledRules
+    .filter(
+      (r) =>
+        r.category === 'reject' &&
+        ruleProvidersObj[r.providerName]?.behavior === 'domain'
+    )
+    .map((r) => r.providerName);
 
   for (const mod of enabledRules) {
     const resolvedTarget =
@@ -363,6 +383,8 @@ const OVERWRITE_SNIFFER = ${JSON.stringify(overwrite.overwriteSniffer)};
 const GROUP_SPECS = ${JSON.stringify(serializedGroups, null, 2)};
 
 const RULE_PROVIDERS = ${JSON.stringify(ruleProvidersObj, null, 2)};
+
+const AD_DOMAIN_PROVIDERS = ${JSON.stringify(adDomainProviders)};
 
 const RULES = ${JSON.stringify(rulesList, null, 2)};
 
@@ -528,13 +550,9 @@ function main(config) {
     if (RULE_PROVIDERS['private']) fakeIpFilterList.push('RULE-SET:private');
     if (RULE_PROVIDERS['cn-domain']) fakeIpFilterList.push('RULE-SET:cn-domain');
 
-    var adDomainKeys = Object.keys(RULE_PROVIDERS).filter(function (k) {
+    var adDomainKeys = AD_DOMAIN_PROVIDERS.filter(function (k) {
       var rp = RULE_PROVIDERS[k];
-      return (
-        rp &&
-        rp.behavior === 'domain' &&
-        (k.indexOf('ad') !== -1 || k.indexOf('httpdns') !== -1 || k === 'awavenue-ads' || k === 'cats-adrules' || k === 'anti-ad')
-      );
+      return Boolean(rp && rp.behavior === 'domain');
     });
 
     var chinaPolicyProviders = ['private', 'cn-domain', 'apple-cn', 'microsoft-cn'].filter(function (k) {
@@ -913,7 +931,7 @@ export function generateReadmeMd(state: ClashWorkspaceState): string {
 - **完整节点列表可见**：主组 \`🚀 节点选择\` 同时保留地区分组与全部清洗后单节点，另附独立 \`🎯 手动节点列表\`，兼容 \`proxies\` 与 \`proxy-providers\` 订阅。
 - **自动故障转移 (\`fallback\`)**：每 180 秒探测可用性，当前节点失联时自动无缝切换至下一个可用节点。
 - **负载均衡 (\`load-balance\`)**：基于 \`consistent-hashing\` 会话保持的并发分流。
-- **分级多引擎去广告与 YouTube 优化**（当前等级：\`${kernel.adBlockLevel || 'balanced'}\`）：支持按设备性能一键切换轻量 / 均衡 / 强力满血去广告，集成 **AdGuard 基础 (SDNS)**、**blackmatrix7 移动端广告增强**、**AWAvenue-Ads（秋风 .mrs）**、**217heidai AdGuard+EasyList 全量**、**anti-AD** 与 **HTTPDNS 拦截**，并阻断 YouTube QUIC UDP 443。
+- **分级多引擎去广告、隐私保护与 YouTube 优化**（当前等级：\`${kernel.adBlockLevel || 'balanced'}\`）：支持按设备性能一键切换轻量 / 均衡 / 极客满血去广告（最高 10 大引擎），集成 **AdGuard 基础 (SDNS)**、**blackmatrix7 Privacy 隐私追踪 / Hijacking 反劫持 / 移动端广告增强**、**AWAvenue-Ads（秋风 .mrs）**、**217heidai AdGuard+EasyList 全量**、**Cats-Team AdRules**、**anti-AD** 与 **HTTPDNS 拦截**，并阻断 YouTube 与广告 SDK 的 QUIC UDP 443。
 - **智能空组跳过（JS 模式）**：自动清洗无效/高倍率提示节点（保留 \`10Gbps\`、\`GB\` 节点），并在订阅缺少某地区节点时自动跳过对应分组。
 
 ## 导入 Clash Mi 的覆写订阅链接

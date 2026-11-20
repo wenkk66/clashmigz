@@ -1,16 +1,20 @@
-# 自定义强力去广告、YouTube/Google 追踪、国内 App 开屏 SDK 与 HTTPDNS IP 封堵
-# 1. YouTube / Google 广告与遥测
+# 自定义强力去广告、YouTube/Google 追踪、隐私遥测、国内 App 开屏 SDK 与 HTTPDNS IP 封堵
+# 1. YouTube / Google / TikTok 广告与隐私遥测
 DOMAIN-SUFFIX,doubleclick.net
 DOMAIN-SUFFIX,googlesyndication.com
 DOMAIN-SUFFIX,googleadservices.com
 DOMAIN-SUFFIX,adservice.google.com
 DOMAIN-SUFFIX,google-analytics.com
+DOMAIN-SUFFIX,fundingchoicesmessages.google.com
 DOMAIN-SUFFIX,s0.2mdn.net
 DOMAIN-SUFFIX,ads.youtube.com
 DOMAIN-SUFFIX,app-measurement.com
 DOMAIN-SUFFIX,crashlytics.com
 DOMAIN-SUFFIX,firebaseinappmessaging.googleapis.com
-# 2. 国内 App 开屏广告联盟 (穿山甲 / 广点通 / 百度 / 快手 / 小米 / OPPO / vivo / 友盟)
+DOMAIN-SUFFIX,ads.tiktok.com
+DOMAIN-SUFFIX,ads-sg.tiktok.com
+DOMAIN-SUFFIX,analytics.tiktok.com
+# 2. 国内 App 开屏广告联盟与埋点遥测 (穿山甲 / 广点通 / 百度 / 快手 / 小米 / OPPO / vivo / 友盟)
 DOMAIN-SUFFIX,pangolin-sdk-toutiao.com
 DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com
 DOMAIN-SUFFIX,pangolin.snssdk.com
@@ -20,19 +24,30 @@ DOMAIN-SUFFIX,gdt.qq.com
 DOMAIN-SUFFIX,adsmind.gdtimg.com
 DOMAIN-SUFFIX,pgdt.gtimg.cn
 DOMAIN-SUFFIX,tangram.e.qq.com
+DOMAIN-SUFFIX,sdk.e.qq.com
+DOMAIN-SUFFIX,ad.qq.com
+DOMAIN-SUFFIX,btrace.qq.com
+DOMAIN-SUFFIX,tpns.qq.com
+DOMAIN-SUFFIX,tmead.y.qq.com
 DOMAIN-SUFFIX,mobads.baidu.com
 DOMAIN-SUFFIX,mobads-logs.baidu.com
 DOMAIN-SUFFIX,pos.baidu.com
+DOMAIN-SUFFIX,als.baidu.com
 DOMAIN-SUFFIX,e.kuaishou.com
 DOMAIN-SUFFIX,open.e.kuaishou.com
+DOMAIN-SUFFIX,gdfp.gifshow.com
 DOMAIN-SUFFIX,umeng.com
 DOMAIN-SUFFIX,umengcloud.com
+DOMAIN-SUFFIX,alog.umeng.com
 DOMAIN-SUFFIX,ad.xiaomi.com
 DOMAIN-SUFFIX,sdkconfig.ad.xiaomi.com
 DOMAIN-SUFFIX,data.mistat.xiaomi.com
+DOMAIN-SUFFIX,tracking.miui.com
 DOMAIN-SUFFIX,ads.heytapmobi.com
 DOMAIN-SUFFIX,adx.ads.oppomobi.com
 DOMAIN-SUFFIX,stsdk.vivo.com.cn
+DOMAIN-SUFFIX,adreq.vivo.com.cn
+DOMAIN-SUFFIX,log-upload-os.hoyoverse.com
 DOMAIN-KEYWORD,adservice
 DOMAIN-KEYWORD,pangolin-sdk-toutiao
 # 3. 封堵国内 App HTTPDNS 直连 IP (防止绕过域名去广告)

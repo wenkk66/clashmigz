@@ -22,6 +22,7 @@ import {
   DEFAULT_GLOBAL_EXCLUDE,
   inferAdBlockLevel,
 } from '../data/presets';
+import { ProxyGroupTopology } from './ProxyGroupTopology';
 
 interface ConfigBuilderViewProps {
   state: ClashWorkspaceState;
@@ -376,48 +377,21 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
           </div>
         </div>
 
-        {/* Visual Group Sequence Bar */}
-        <div className="mt-4 pb-5 border-b border-slate-100">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-            <span className="text-xs font-medium text-slate-700">
-              Clash Mi 客户端分组显示顺序预览（点击分组可展开子成员排序）
-            </span>
-            <span className="text-xs text-slate-500 font-mono tabular-nums">
-              已启用 {enabledGroups.length} 组 · 首位：{firstEnabledGroup?.name || '-'}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-            {enabledGroups.map((grp, idx) => {
-              const isSelected = expandedGroupId === grp.id;
-              return (
-                <button
-                  key={grp.id}
-                  type="button"
-                  onClick={() => setExpandedGroupId(isSelected ? null : grp.id)}
-                  className={`text-left px-3 py-2 rounded-md border transition-colors ${
-                    isSelected
-                      ? 'border-blue-600 bg-blue-50/60'
-                      : idx === 0
-                        ? 'border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50'
-                        : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100/70'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono tabular-nums text-[11px] font-semibold text-slate-500">
-                      #{String(idx + 1).padStart(2, '0')}
-                    </span>
-                    <span className="font-mono text-[11px] text-slate-500 truncate">
-                      {grp.type}
-                    </span>
-                  </div>
-                  <div className="text-xs font-medium text-slate-900 truncate mt-0.5">
-                    {grp.name}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        {/* Interactive Strategy Group Topology & Clash Mi Mobile Preview */}
+        <ProxyGroupTopology
+          state={state}
+          selectedGroupId={expandedGroupId}
+          onSelectGroup={(groupId) => setExpandedGroupId(groupId)}
+          onMoveGroup={moveGroup}
+          onPinAutoFirst={pinAutoFirst}
+          onInspectInTable={(groupId) => {
+            setExpandedGroupId(groupId);
+            requestAnimationFrame(() => {
+              const el = document.getElementById(`group-row-${groupId}`);
+              el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+          }}
+        />
 
         {/* Global Exclude Regex */}
         <div className="mt-4 pb-5 border-b border-slate-100">
@@ -473,6 +447,7 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
                 return (
                   <React.Fragment key={grp.id}>
                     <tr
+                      id={`group-row-${grp.id}`}
                       className={`transition-colors ${
                         isExpanded ? 'bg-blue-50/30' : 'hover:bg-slate-50/70'
                       }`}
@@ -735,7 +710,7 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
               03. 分流规则集、设备性能去广告等级与自定义规则
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              内置 AdGuard 基础、移动端 App 增强与 217heidai 全量去广告规则，支持按手机/路由器性能一键切换拦截等级。
+              内置 AdGuard 基础、Privacy 隐私追踪、反运营商劫持、移动端 App 增强与 217heidai 全量去广告规则，支持按手机/路由器性能一键切换拦截等级。
             </p>
           </div>
           <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
