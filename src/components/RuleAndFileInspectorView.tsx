@@ -12,20 +12,26 @@ interface RuleAndFileInspectorViewProps {
 }
 
 const QUICK_TEST_DOMAINS = [
-  'chatgpt.com',
+  'gemini.google.com',
+  'play.google.com',
+  'google.com',
   'youtube.com',
-  'ads.youtube.com',
-  'imasdk.googleapis.com',
-  'analytics.tiktok.com',
-  'sdk.e.qq.com',
+  'chatgpt.com',
+  't.me',
+  'discord.com',
+  'x.com',
+  'instagram.com',
+  'whatsapp.com',
+  'facebook.com',
+  'reddit.com',
+  'line.me',
   'tiktok.com',
   'github.com',
-  'google.com',
-  'steampowered.com',
+  'paypal.com',
   'bilibili.com',
+  'ads.youtube.com',
   'doubleclick.net',
   '192.168.1.10',
-  'cursor.sh',
 ];
 
 export const RuleAndFileInspectorView: React.FC<RuleAndFileInspectorViewProps> = ({

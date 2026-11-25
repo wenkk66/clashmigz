@@ -4,6 +4,11 @@ import {
   GeneratedFile,
   YamlValidationResult,
 } from '../types/clash';
+import {
+  INITIAL_CLASH_MI_NODES_YAML,
+  INITIAL_NODES_BASE64_TXT,
+  INITIAL_NODES_RAW_TXT,
+} from '../data/initialSubscription';
 
 function parseCustomRuleLines(raw: string, target: string): string[] {
   return raw
@@ -1852,6 +1857,27 @@ export function generateAllRepoFiles(state: ClashWorkspaceState): GeneratedFile[
         title: '零依赖节点提取与订阅生成脚本',
         description: '抓取 YAML/JSON 节点源，去重并生成 clash-mi-nodes.yaml 与 Base64 订阅',
         content: generateFetchNodesScript(),
+      },
+      {
+        path: 'subscriptions/clash-mi-nodes.yaml',
+        language: 'yaml',
+        title: 'Clash Mi 全协议统一节点订阅',
+        description: '含 17 个已提取节点 (Hysteria / Hysteria2 / Mieru)，推送即用并每日自动更新',
+        content: INITIAL_CLASH_MI_NODES_YAML,
+      },
+      {
+        path: 'subscriptions/nodes-base64.txt',
+        language: 'text',
+        title: '通用 Base64 节点订阅',
+        description: '含 Hysteria / Hysteria2 节点 Base64 订阅',
+        content: INITIAL_NODES_BASE64_TXT,
+      },
+      {
+        path: 'subscriptions/nodes-raw.txt',
+        language: 'text',
+        title: '明文节点分享链接列表',
+        description: '含 Hysteria / Hysteria2 明文 URI 分享链接',
+        content: INITIAL_NODES_RAW_TXT,
       }
     );
   }

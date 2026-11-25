@@ -113,6 +113,25 @@ const GROUP_SPECS = [
     ]
   },
   {
+    "id": "grp-gemini",
+    "name": "💎 Gemini 专属",
+    "type": "select",
+    "filter": "美|新|日|台|US|SG|JP|TW|🇺🇸|🇸🇬|🇯🇵|🇹🇼",
+    "excludeFilter": "剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国|港|HK|Hong|🇭🇰|俄|RU|CN",
+    "url": "https://gemini.google.com",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "🇺🇸 美国节点",
+      "🇸🇬 狮城节点",
+      "🇯🇵 日本节点",
+      "🇹🇼 台湾节点",
+      "🎯 手动节点列表"
+    ]
+  },
+  {
     "id": "grp-ai",
     "name": "🤖 AI 服务专属",
     "type": "select",
@@ -129,6 +148,213 @@ const GROUP_SPECS = [
       "🇯🇵 日本节点",
       "🇹🇼 台湾节点",
       "🎯 手动节点列表"
+    ]
+  },
+  {
+    "id": "grp-google-play",
+    "name": "🛒 Google Play 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🇭🇰 香港节点",
+      "🇹🇼 台湾节点",
+      "🇸🇬 狮城节点",
+      "🇯🇵 日本节点",
+      "🇺🇸 美国节点",
+      "🎯 手动节点列表",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-google",
+    "name": "🔍 Google 服务",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🚀 节点选择",
+      "🇭🇰 香港节点",
+      "🇸🇬 狮城节点",
+      "🇯🇵 日本节点",
+      "🇺🇸 美国节点",
+      "🇹🇼 台湾节点",
+      "🎯 手动节点列表"
+    ]
+  },
+  {
+    "id": "grp-telegram",
+    "name": "✈️ Telegram 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🚨 故障转移",
+      "🇸🇬 狮城节点",
+      "🇭🇰 香港节点",
+      "🇯🇵 日本节点",
+      "🇺🇸 美国节点",
+      "🎯 手动节点列表",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-discord",
+    "name": "💬 Discord 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🇯🇵 日本节点",
+      "🇸🇬 狮城节点",
+      "🇺🇸 美国节点",
+      "🇭🇰 香港节点",
+      "🎯 手动节点列表",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-twitter",
+    "name": "🐦 X (Twitter) 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🇭🇰 香港节点",
+      "🇯🇵 日本节点",
+      "🇸🇬 狮城节点",
+      "🇺🇸 美国节点",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-instagram",
+    "name": "📸 Instagram & Threads",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🇭🇰 香港节点",
+      "🇹🇼 台湾节点",
+      "🇸🇬 狮城节点",
+      "🇯🇵 日本节点",
+      "🇺🇸 美国节点",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-whatsapp",
+    "name": "🟢 WhatsApp 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🚨 故障转移",
+      "🇭🇰 香港节点",
+      "🇸🇬 狮城节点",
+      "🇺🇸 美国节点",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-facebook",
+    "name": "📘 Facebook 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🇭🇰 香港节点",
+      "🇹🇼 台湾节点",
+      "🇸🇬 狮城节点",
+      "🇺🇸 美国节点",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-reddit",
+    "name": "🟠 Reddit 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "♻️ 自动测速优选",
+      "🇺🇸 美国节点",
+      "🇸🇬 狮城节点",
+      "🇯🇵 日本节点",
+      "🇭🇰 香港节点",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-line",
+    "name": "🟩 LINE 专属",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "🇯🇵 日本节点",
+      "🇹🇼 台湾节点",
+      "🇸🇬 狮城节点",
+      "♻️ 自动测速优选",
+      "🚀 节点选择"
     ]
   },
   {
@@ -173,8 +399,26 @@ const GROUP_SPECS = [
     ]
   },
   {
-    "id": "grp-social",
-    "name": "📲 电报与社交",
+    "id": "grp-bilibili",
+    "name": "📺 哔哩哔哩 (Bilibili)",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "DIRECT",
+      "🇭🇰 香港节点",
+      "🇹🇼 台湾节点",
+      "🚀 节点选择"
+    ]
+  },
+  {
+    "id": "grp-dev",
+    "name": "💻 GitHub & 学术开发",
     "type": "select",
     "filter": "",
     "excludeFilter": "",
@@ -186,11 +430,11 @@ const GROUP_SPECS = [
     "proxies": [
       "♻️ 自动测速优选",
       "🚀 节点选择",
-      "🚨 故障转移",
-      "🇸🇬 狮城节点",
       "🇭🇰 香港节点",
       "🇯🇵 日本节点",
-      "🇺🇸 美国节点"
+      "🇸🇬 狮城节点",
+      "🇺🇸 美国节点",
+      "DIRECT"
     ]
   },
   {
@@ -211,6 +455,25 @@ const GROUP_SPECS = [
       "🇭🇰 香港节点",
       "🇯🇵 日本节点",
       "🇺🇸 美国节点"
+    ]
+  },
+  {
+    "id": "grp-paypal",
+    "name": "💳 跨境支付与网购",
+    "type": "select",
+    "filter": "",
+    "excludeFilter": "",
+    "url": "",
+    "interval": 300,
+    "tolerance": 50,
+    "strategy": "consistent-hashing",
+    "includeAllProxies": false,
+    "proxies": [
+      "🇺🇸 美国节点",
+      "🇸🇬 狮城节点",
+      "🇭🇰 香港节点",
+      "🚀 节点选择",
+      "DIRECT"
     ]
   },
   {
@@ -406,12 +669,12 @@ const RULE_PROVIDERS = {
     "path": "./rule_providers/privacy-domain.yaml",
     "interval": 86400
   },
-  "ai-non-cn": {
+  "youtube": {
     "type": "http",
     "behavior": "domain",
     "format": "mrs",
-    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs",
-    "path": "./rule_providers/ai-non-cn.mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs",
+    "path": "./rule_providers/youtube.mrs",
     "interval": 86400
   },
   "google-gemini": {
@@ -422,20 +685,140 @@ const RULE_PROVIDERS = {
     "path": "./rule_providers/google-gemini.mrs",
     "interval": 86400
   },
+  "google-play": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google-play.mrs",
+    "path": "./rule_providers/google-play.mrs",
+    "interval": 86400
+  },
+  "openai": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.mrs",
+    "path": "./rule_providers/openai.mrs",
+    "interval": 86400
+  },
+  "anthropic": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/anthropic.mrs",
+    "path": "./rule_providers/anthropic.mrs",
+    "interval": 86400
+  },
+  "apple-intelligence": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple-intelligence.mrs",
+    "path": "./rule_providers/apple-intelligence.mrs",
+    "interval": 86400
+  },
+  "ai-non-cn": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs",
+    "path": "./rule_providers/ai-non-cn.mrs",
+    "interval": 86400
+  },
+  "google": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs",
+    "path": "./rule_providers/google.mrs",
+    "interval": 86400
+  },
+  "telegram-domain": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs",
+    "path": "./rule_providers/telegram-domain.mrs",
+    "interval": 86400
+  },
+  "telegram": {
+    "type": "http",
+    "behavior": "ipcidr",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs",
+    "path": "./rule_providers/telegram.mrs",
+    "interval": 86400
+  },
+  "discord": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/discord.mrs",
+    "path": "./rule_providers/discord.mrs",
+    "interval": 86400
+  },
+  "twitter": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitter.mrs",
+    "path": "./rule_providers/twitter.mrs",
+    "interval": 86400
+  },
+  "instagram": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/instagram.mrs",
+    "path": "./rule_providers/instagram.mrs",
+    "interval": 86400
+  },
+  "threads": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/threads.mrs",
+    "path": "./rule_providers/threads.mrs",
+    "interval": 86400
+  },
+  "whatsapp": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/whatsapp.mrs",
+    "path": "./rule_providers/whatsapp.mrs",
+    "interval": 86400
+  },
+  "facebook": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/facebook.mrs",
+    "path": "./rule_providers/facebook.mrs",
+    "interval": 86400
+  },
+  "reddit": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/reddit.mrs",
+    "path": "./rule_providers/reddit.mrs",
+    "interval": 86400
+  },
+  "line": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/line.mrs",
+    "path": "./rule_providers/line.mrs",
+    "interval": 86400
+  },
   "tiktok": {
     "type": "http",
     "behavior": "domain",
     "format": "mrs",
     "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs",
     "path": "./rule_providers/tiktok.mrs",
-    "interval": 86400
-  },
-  "youtube": {
-    "type": "http",
-    "behavior": "domain",
-    "format": "mrs",
-    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs",
-    "path": "./rule_providers/youtube.mrs",
     "interval": 86400
   },
   "netflix": {
@@ -462,12 +845,20 @@ const RULE_PROVIDERS = {
     "path": "./rule_providers/spotify.mrs",
     "interval": 86400
   },
-  "telegram": {
+  "bahamut": {
     "type": "http",
-    "behavior": "ipcidr",
+    "behavior": "domain",
     "format": "mrs",
-    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs",
-    "path": "./rule_providers/telegram.mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bahamut.mrs",
+    "path": "./rule_providers/bahamut.mrs",
+    "interval": 86400
+  },
+  "bilibili": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bilibili.mrs",
+    "path": "./rule_providers/bilibili.mrs",
     "interval": 86400
   },
   "github": {
@@ -478,12 +869,20 @@ const RULE_PROVIDERS = {
     "path": "./rule_providers/github.mrs",
     "interval": 86400
   },
-  "google": {
+  "category-scholar-non-cn": {
     "type": "http",
     "behavior": "domain",
     "format": "mrs",
-    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs",
-    "path": "./rule_providers/google.mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-scholar-!cn.mrs",
+    "path": "./rule_providers/category-scholar-non-cn.mrs",
+    "interval": 86400
+  },
+  "paypal": {
+    "type": "http",
+    "behavior": "domain",
+    "format": "mrs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/paypal.mrs",
+    "path": "./rule_providers/paypal.mrs",
     "interval": 86400
   },
   "steam": {
@@ -631,16 +1030,33 @@ const RULES = [
   "RULE-SET,cats-adrules,🛡️ 广告拦截",
   "RULE-SET,adguard-base,🛡️ 广告拦截",
   "RULE-SET,privacy-domain,🛡️ 广告拦截",
-  "RULE-SET,ai-non-cn,🤖 AI 服务专属",
-  "RULE-SET,google-gemini,🤖 AI 服务专属",
-  "RULE-SET,tiktok,🎵 TikTok 专属",
   "RULE-SET,youtube,📺 YouTube 专属",
+  "RULE-SET,google-gemini,💎 Gemini 专属",
+  "RULE-SET,google-play,🛒 Google Play 专属",
+  "RULE-SET,openai,🤖 AI 服务专属",
+  "RULE-SET,anthropic,🤖 AI 服务专属",
+  "RULE-SET,apple-intelligence,🤖 AI 服务专属",
+  "RULE-SET,ai-non-cn,🤖 AI 服务专属",
+  "RULE-SET,google,🔍 Google 服务",
+  "RULE-SET,telegram-domain,✈️ Telegram 专属",
+  "RULE-SET,telegram,✈️ Telegram 专属,no-resolve",
+  "RULE-SET,discord,💬 Discord 专属",
+  "RULE-SET,twitter,🐦 X (Twitter) 专属",
+  "RULE-SET,instagram,📸 Instagram & Threads",
+  "RULE-SET,threads,📸 Instagram & Threads",
+  "RULE-SET,whatsapp,🟢 WhatsApp 专属",
+  "RULE-SET,facebook,📘 Facebook 专属",
+  "RULE-SET,reddit,🟠 Reddit 专属",
+  "RULE-SET,line,🟩 LINE 专属",
+  "RULE-SET,tiktok,🎵 TikTok 专属",
   "RULE-SET,netflix,🎬 流媒体解锁",
   "RULE-SET,disney,🎬 流媒体解锁",
   "RULE-SET,spotify,🎬 流媒体解锁",
-  "RULE-SET,telegram,📲 电报与社交,no-resolve",
-  "RULE-SET,github,🚀 节点选择",
-  "RULE-SET,google,🚀 节点选择",
+  "RULE-SET,bahamut,🎬 流媒体解锁",
+  "RULE-SET,bilibili,📺 哔哩哔哩 (Bilibili)",
+  "RULE-SET,github,💻 GitHub & 学术开发",
+  "RULE-SET,category-scholar-non-cn,💻 GitHub & 学术开发",
+  "RULE-SET,paypal,💳 跨境支付与网购",
   "RULE-SET,steam,🎮 游戏与平台",
   "RULE-SET,apple-cn,DIRECT",
   "RULE-SET,microsoft-cn,DIRECT",
