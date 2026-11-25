@@ -26,6 +26,14 @@
 - **jsDelivr CDN 加速**:
   `https://cdn.jsdelivr.net/gh/your-github-username/clash-mi-override@main/override/clash-mi-override.js`
 
+### 3. 每日自动提取节点订阅 (`subscriptions/`)
+- **Clash Mi YAML 节点订阅**:
+  `https://raw.githubusercontent.com/your-github-username/clash-mi-override/main/subscriptions/clash-mi-nodes.yaml`
+- **通用 Base64 节点订阅**:
+  `https://raw.githubusercontent.com/your-github-username/clash-mi-override/main/subscriptions/nodes-base64.txt`
+- **纯文本分享链接**:
+  `https://raw.githubusercontent.com/your-github-username/clash-mi-override/main/subscriptions/nodes-raw.txt`
+
 
 ## 使用步骤（Clash Mi 客户端）
 

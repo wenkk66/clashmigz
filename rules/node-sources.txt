@@ -1,0 +1,46 @@
+# 节点提取源列表 (每行一个 URL，支持 Clash YAML config.yaml / Hysteria2 JSON config.json / URI 或 Base64 订阅)
+# 一、Clash.Meta YAML 节点源 (GitLab 镜像 1~6)
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/1/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/2/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/3/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/4/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/5/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/6/config.yaml
+
+# 二、Clash.Meta YAML 节点源 (67867867 镜像 1~6)
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/1/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/2/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/3/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/4/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/5/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/6/config.yaml
+
+# 三、Hysteria2 JSON 节点源 (GitLab 镜像 1~4)
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria2/1/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria2/2/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria2/3/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria2/4/config.json
+
+# 四、Hysteria2 JSON 节点源 (67867867 镜像 1~4)
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria2/1/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria2/2/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria2/3/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria2/4/config.json
+
+# 五、Hysteria v1 JSON 节点源 (GitLab 镜像 1~4)
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria/1/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria/2/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria/3/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria/4/config.json
+
+# 六、Hysteria v1 JSON 节点源 (67867867 镜像 1~4)
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria/1/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria/2/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria/3/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria/4/config.json
+
+# 七、Mieru JSON 节点源 (GitLab 与 67867867 镜像 1~2)
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/mieru/1/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/mieru/2/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/mieru/1/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/mieru/2/config.json

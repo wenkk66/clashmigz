@@ -19,14 +19,22 @@ import { RepoDeployView } from './components/RepoDeployView';
 
 type ActiveTab = 'builder' | 'simulator' | 'inspector' | 'deploy';
 
-const STORAGE_KEY = 'clash_mi_override_workspace_v11';
+const STORAGE_KEY = 'clash_mi_override_workspace_v14';
 
 export default function App() {
   const [workspace, setWorkspace] = useState<ClashWorkspaceState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved) as ClashWorkspaceState;
+        const parsed = JSON.parse(saved) as Partial<ClashWorkspaceState>;
+        return {
+          ...INITIAL_WORKSPACE_STATE,
+          ...parsed,
+          nodeSubscription: {
+            ...INITIAL_WORKSPACE_STATE.nodeSubscription,
+            ...(parsed.nodeSubscription || {}),
+          },
+        };
       }
     } catch {
       // ignore storage errors

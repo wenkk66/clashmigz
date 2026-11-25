@@ -3,6 +3,53 @@ import { AdBlockLevel, ClashWorkspaceState } from '../types/clash';
 export const DEFAULT_GLOBAL_EXCLUDE =
   '剩余流量|套餐到期|过期时间|官网|距离下次重置|Traffic|Expire|\\d+(?:\\.\\d+)?\\s?(?:GB|TB|MB)\\b|Test|测试|通知|订阅|群组|邀请|倍率.*[3-9]|10x|回国';
 
+export const DEFAULT_NODE_SOURCES = `# 节点提取源列表 (每行一个 URL，支持 Clash YAML config.yaml / Hysteria2 JSON config.json / URI 或 Base64 订阅)
+# 一、Clash.Meta YAML 节点源 (GitLab 镜像 1~6)
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/1/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/2/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/3/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/4/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/5/config.yaml
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/6/config.yaml
+
+# 二、Clash.Meta YAML 节点源 (67867867 镜像 1~6)
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/1/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/2/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/3/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/4/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/5/config.yaml
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/6/config.yaml
+
+# 三、Hysteria2 JSON 节点源 (GitLab 镜像 1~4)
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria2/1/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria2/2/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria2/3/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria2/4/config.json
+
+# 四、Hysteria2 JSON 节点源 (67867867 镜像 1~4)
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria2/1/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria2/2/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria2/3/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria2/4/config.json
+
+# 五、Hysteria v1 JSON 节点源 (GitLab 镜像 1~4)
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria/1/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria/2/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria/3/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/hysteria/4/config.json
+
+# 六、Hysteria v1 JSON 节点源 (67867867 镜像 1~4)
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria/1/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria/2/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria/3/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/hysteria/4/config.json
+
+# 七、Mieru JSON 节点源 (GitLab 与 67867867 镜像 1~2)
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/mieru/1/config.json
+https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/mieru/2/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/mieru/1/config.json
+https://www.67867867.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/mieru/2/config.json`;
+
 export const AD_BLOCK_LEVEL_PRESETS: Record<
   Exclude<AdBlockLevel, 'custom'>,
   {
@@ -895,6 +942,11 @@ IP-CIDR,180.76.76.200/32,no-resolve
 IP-CIDR,101.226.103.106/32,no-resolve
 IP-CIDR,101.226.212.27/32,no-resolve
 IP-CIDR,117.185.228.108/32,no-resolve`,
+  },
+  nodeSubscription: {
+    enabled: true,
+    cronExpression: '0 22 * * *',
+    sourcesList: DEFAULT_NODE_SOURCES,
   },
 };
 

@@ -1,0 +1,255 @@
+# ============================================================================
+# Clash Mi 每日自动提取节点订阅 (clash-mi-nodes.yaml)
+# 更新时间 (UTC): 2026-11-25T02:56:38.787Z
+# 提取结果: 17 个去重节点 (来自 32/32 个可用源)
+# 说明: 可直接作为独立订阅导入 Clash Mi，也可叠加本仓库 override/clash-mi-override.js 覆写使用
+# ============================================================================
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: true
+
+proxies:
+  - name: "🌐 自动节点 IPv4 Hy1-01 (137.175.82.41)"
+    type: "hysteria"
+    server: "137.175.82.41"
+    port: 20022
+    auth-str: "dongtaiwang.com"
+    protocol: "udp"
+    up: "11 Mbps"
+    down: "55 Mbps"
+    sni: "bing.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+  - name: "🌐 自动节点 IPv4 Hy1-02 (137.175.82.42)"
+    type: "hysteria"
+    server: "137.175.82.42"
+    port: 20022
+    auth-str: "dongtaiwang.com"
+    protocol: "udp"
+    up: "11 Mbps"
+    down: "55 Mbps"
+    sni: "bing.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+  - name: "🌐 自动节点 IPv4 Hy1-03 (137.175.82.44)"
+    type: "hysteria"
+    server: "137.175.82.44"
+    port: 443
+    auth-str: "dongtaiwang.com"
+    protocol: "udp"
+    up: "11 Mbps"
+    down: "55 Mbps"
+    sni: "bing.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+  - name: "🌐 自动节点 IPv4 Mieru-04 (198.200.57.141)"
+    type: "mieru"
+    server: "198.200.57.141"
+    port: 55334
+    transport: "TCP"
+    username: "alvin9999.com"
+    password: "alvin9999.com"
+    multiplexing: "MULTIPLEXING_LOW"
+    udp: true
+  - name: "🌐 自动节点 IPv4 Hy1-05 (5.83.129.90)"
+    type: "hysteria"
+    server: "5.83.129.90"
+    port: 54177
+    auth-str: "dongtaiwang.com"
+    protocol: "udp"
+    up: "11 Mbps"
+    down: "55 Mbps"
+    sni: "apple.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+  - name: "🇫🇷 法国 IPv4 Hy1-06 (62.210.124.132)"
+    type: "hysteria"
+    server: "62.210.124.132"
+    port: 24667
+    auth-str: "dongtaiwang.com"
+    protocol: "udp"
+    up: "11 Mbps"
+    down: "55 Mbps"
+    sni: "bing.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+  - name: "🇫🇷 法国 IPv6 Hy2-07 (::10)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::10"
+    port: 22000
+    password: "dongtaiwang.com"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-08 (::11)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::11"
+    port: 22000
+    password: "dongtaiwang.com"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-09 (::13)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::13"
+    port: 22000
+    password: "dongtaiwang.com"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-10 (::15)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::15"
+    port: 22000
+    password: "dongtaiwang.com"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-11 (::16)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::16"
+    port: 22000
+    password: "dongtaiwang.com"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-12 (::17)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::17"
+    port: 22000
+    password: "dongtaiwang.com"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    alpn: ["h3"]
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-13 (::3)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::3"
+    port: 22000
+    password: "dongtaiwang.com"
+    up: "11 mbps"
+    down: "55 mbps"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-14 (::4)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::4"
+    port: 22000
+    password: "dongtaiwang.com"
+    up: "11 mbps"
+    down: "55 mbps"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-15 (::6)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::6"
+    port: 22000
+    password: "dongtaiwang.com"
+    up: "11 mbps"
+    down: "55 mbps"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-16 (::7)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::7"
+    port: 22000
+    password: "dongtaiwang.com"
+    up: "11 mbps"
+    down: "55 mbps"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    udp: true
+  - name: "🇫🇷 法国 IPv6 Hy2-17 (::8)"
+    type: "hysteria2"
+    server: "2001:bc8:32d7:17b::8"
+    port: 22000
+    password: "dongtaiwang.com"
+    up: "11 mbps"
+    down: "55 mbps"
+    sni: "www.microsoft.com"
+    skip-cert-verify: true
+    udp: true
+
+proxy-groups:
+  - name: "♻️ 自动测速优选"
+    type: url-test
+    url: "https://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    proxies:
+      - "🌐 自动节点 IPv4 Hy1-01 (137.175.82.41)"
+      - "🌐 自动节点 IPv4 Hy1-02 (137.175.82.42)"
+      - "🌐 自动节点 IPv4 Hy1-03 (137.175.82.44)"
+      - "🌐 自动节点 IPv4 Mieru-04 (198.200.57.141)"
+      - "🌐 自动节点 IPv4 Hy1-05 (5.83.129.90)"
+      - "🇫🇷 法国 IPv4 Hy1-06 (62.210.124.132)"
+      - "🇫🇷 法国 IPv6 Hy2-07 (::10)"
+      - "🇫🇷 法国 IPv6 Hy2-08 (::11)"
+      - "🇫🇷 法国 IPv6 Hy2-09 (::13)"
+      - "🇫🇷 法国 IPv6 Hy2-10 (::15)"
+      - "🇫🇷 法国 IPv6 Hy2-11 (::16)"
+      - "🇫🇷 法国 IPv6 Hy2-12 (::17)"
+      - "🇫🇷 法国 IPv6 Hy2-13 (::3)"
+      - "🇫🇷 法国 IPv6 Hy2-14 (::4)"
+      - "🇫🇷 法国 IPv6 Hy2-15 (::6)"
+      - "🇫🇷 法国 IPv6 Hy2-16 (::7)"
+      - "🇫🇷 法国 IPv6 Hy2-17 (::8)"
+  - name: "🚀 节点选择"
+    type: select
+    proxies:
+      - "♻️ 自动测速优选"
+      - "🚨 故障转移"
+      - "🌐 自动节点 IPv4 Hy1-01 (137.175.82.41)"
+      - "🌐 自动节点 IPv4 Hy1-02 (137.175.82.42)"
+      - "🌐 自动节点 IPv4 Hy1-03 (137.175.82.44)"
+      - "🌐 自动节点 IPv4 Mieru-04 (198.200.57.141)"
+      - "🌐 自动节点 IPv4 Hy1-05 (5.83.129.90)"
+      - "🇫🇷 法国 IPv4 Hy1-06 (62.210.124.132)"
+      - "🇫🇷 法国 IPv6 Hy2-07 (::10)"
+      - "🇫🇷 法国 IPv6 Hy2-08 (::11)"
+      - "🇫🇷 法国 IPv6 Hy2-09 (::13)"
+      - "🇫🇷 法国 IPv6 Hy2-10 (::15)"
+      - "🇫🇷 法国 IPv6 Hy2-11 (::16)"
+      - "🇫🇷 法国 IPv6 Hy2-12 (::17)"
+      - "🇫🇷 法国 IPv6 Hy2-13 (::3)"
+      - "🇫🇷 法国 IPv6 Hy2-14 (::4)"
+      - "🇫🇷 法国 IPv6 Hy2-15 (::6)"
+      - "🇫🇷 法国 IPv6 Hy2-16 (::7)"
+      - "🇫🇷 法国 IPv6 Hy2-17 (::8)"
+      - DIRECT
+  - name: "🚨 故障转移"
+    type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 180
+    proxies:
+      - "🌐 自动节点 IPv4 Hy1-01 (137.175.82.41)"
+      - "🌐 自动节点 IPv4 Hy1-02 (137.175.82.42)"
+      - "🌐 自动节点 IPv4 Hy1-03 (137.175.82.44)"
+      - "🌐 自动节点 IPv4 Mieru-04 (198.200.57.141)"
+      - "🌐 自动节点 IPv4 Hy1-05 (5.83.129.90)"
+      - "🇫🇷 法国 IPv4 Hy1-06 (62.210.124.132)"
+      - "🇫🇷 法国 IPv6 Hy2-07 (::10)"
+      - "🇫🇷 法国 IPv6 Hy2-08 (::11)"
+      - "🇫🇷 法国 IPv6 Hy2-09 (::13)"
+      - "🇫🇷 法国 IPv6 Hy2-10 (::15)"
+      - "🇫🇷 法国 IPv6 Hy2-11 (::16)"
+      - "🇫🇷 法国 IPv6 Hy2-12 (::17)"
+      - "🇫🇷 法国 IPv6 Hy2-13 (::3)"
+      - "🇫🇷 法国 IPv6 Hy2-14 (::4)"
+      - "🇫🇷 法国 IPv6 Hy2-15 (::6)"
+      - "🇫🇷 法国 IPv6 Hy2-16 (::7)"
+      - "🇫🇷 法国 IPv6 Hy2-17 (::8)"
+
+rules:
+  - GEOIP,LAN,DIRECT,no-resolve
+  - MATCH,🚀 节点选择

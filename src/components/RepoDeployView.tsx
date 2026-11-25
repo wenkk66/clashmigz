@@ -43,7 +43,7 @@ export const RepoDeployView: React.FC<RepoDeployViewProps> = ({
   const [pushedRepoUrl, setPushedRepoUrl] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const { github, overwrite } = state;
+  const { github, overwrite, nodeSubscription } = state;
   const rawBase = `https://raw.githubusercontent.com/${github.owner}/${github.repo}/${github.branch}`;
   const cdnBase = `https://cdn.jsdelivr.net/gh/${github.owner}/${github.repo}@${github.branch}`;
 
@@ -51,6 +51,10 @@ export const RepoDeployView: React.FC<RepoDeployViewProps> = ({
   const jsRawUrl = `${rawBase}/override/clash-mi-override.js`;
   const yamlCdnUrl = `${cdnBase}/override/diversion.yaml`;
   const jsCdnUrl = `${cdnBase}/override/clash-mi-override.js`;
+  const subYamlRawUrl = `${rawBase}/subscriptions/clash-mi-nodes.yaml`;
+  const subBase64RawUrl = `${rawBase}/subscriptions/nodes-base64.txt`;
+  const subYamlCdnUrl = `${cdnBase}/subscriptions/clash-mi-nodes.yaml`;
+  const subBase64CdnUrl = `${cdnBase}/subscriptions/nodes-base64.txt`;
 
   const gitCliSnippet = `mkdir ${github.repo} && cd ${github.repo}
 # 解压下载的仓库压缩包后执行：
@@ -286,6 +290,88 @@ git push -u origin ${github.branch}`;
               </div>
             </div>
           )}
+
+          {nodeSubscription?.enabled !== false && (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-md px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-slate-700">
+                    每日自动提取节点订阅 URL (添加到 Clash Mi「添加订阅」页)
+                  </div>
+                  <div className="font-mono text-xs text-slate-900 truncate mt-0.5">
+                    {subYamlRawUrl}
+                  </div>
+                  {github.visibility === 'public' && (
+                    <div className="font-mono text-[11px] text-slate-500 truncate mt-0.5">
+                      CDN: {subYamlCdnUrl}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText('sub-yaml-raw', subYamlRawUrl)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 whitespace-nowrap shrink-0"
+                  >
+                    {copiedKey === 'sub-yaml-raw' ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                    {copiedKey === 'sub-yaml-raw' ? '已复制' : '复制节点订阅'}
+                  </button>
+                  {github.visibility === 'public' && (
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText('sub-yaml-cdn', subYamlCdnUrl)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 whitespace-nowrap shrink-0"
+                    >
+                      {copiedKey === 'sub-yaml-cdn' ? '已复制 CDN' : '复制 CDN'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-md px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-slate-700">
+                    通用 Base64 节点订阅 URL (兼容 v2rayN / Shadowrocket / Clash Mi)
+                  </div>
+                  <div className="font-mono text-xs text-slate-900 truncate mt-0.5">
+                    {subBase64RawUrl}
+                  </div>
+                  {github.visibility === 'public' && (
+                    <div className="font-mono text-[11px] text-slate-500 truncate mt-0.5">
+                      CDN: {subBase64CdnUrl}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleCopyText('sub-b64-raw', subBase64RawUrl)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 whitespace-nowrap shrink-0"
+                  >
+                    {copiedKey === 'sub-b64-raw' ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                    {copiedKey === 'sub-b64-raw' ? '已复制' : '复制 Base64 订阅'}
+                  </button>
+                  {github.visibility === 'public' && (
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText('sub-b64-cdn', subBase64CdnUrl)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 whitespace-nowrap shrink-0"
+                    >
+                      {copiedKey === 'sub-b64-cdn' ? '已复制 CDN' : '复制 CDN'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -457,17 +543,21 @@ git push -u origin ${github.branch}`;
 
             <ol className="space-y-2.5 text-xs text-slate-700 leading-relaxed list-decimal list-inside">
               <li>
-                打开 <span className="font-semibold text-slate-900">Clash Mi</span>，进入{' '}
-                <span className="font-semibold text-slate-900">覆写</span> 页面。
+                <span className="font-semibold text-slate-900">导入全部节点订阅</span>：在 GitHub 仓库的{' '}
+                <span className="font-mono text-slate-900">Actions</span> 页手动或定时运行一次{' '}
+                <span className="font-mono text-slate-900">Daily Fetch Nodes</span> 工作流，生成{' '}
+                <span className="font-mono text-slate-900">subscriptions/clash-mi-nodes.yaml</span>；随后在 Clash Mi「
+                <span className="font-semibold text-slate-900">配置 / 添加配置</span>」粘贴上方
+                <span className="font-semibold text-slate-900">节点订阅 URL</span> 即可一次性订阅全部提取节点（含 Hysteria / Hysteria2 / Mieru）。
               </li>
               <li>
-                点击右上角 <span className="font-semibold text-slate-900">云朵图标</span>（URL 导入），粘贴上方的{' '}
-                <span className="font-mono text-slate-900">.js</span> 或{' '}
-                <span className="font-mono text-slate-900">.yaml</span> 订阅链接；或下载单文件后点{' '}
-                <span className="font-mono text-slate-900">+</span> 从本地导入。
+                <span className="font-semibold text-slate-900">启用分流与去广告覆写</span>：进入 Clash Mi「
+                <span className="font-semibold text-slate-900">覆写</span>」页，点击右上角云朵图标粘贴上方{' '}
+                <span className="font-mono text-slate-900">clash-mi-override.js</span> 或{' '}
+                <span className="font-mono text-slate-900">diversion.yaml</span> 链接。
               </li>
               <li>
-                点击选中刚添加的覆写项（字体变为蓝色即生效），后续在客户端内切换任何机场订阅都会自动套用该分流与过滤逻辑。
+                点击选中刚添加的覆写项（字体变为蓝色即生效），之后在 Clash Mi 开启自动测速并定时更新订阅即可使用全部节点。
               </li>
             </ol>
 

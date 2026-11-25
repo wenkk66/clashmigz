@@ -73,6 +73,12 @@ export interface CustomRulesConfig {
   rejectList: string;
 }
 
+export interface NodeSubscriptionConfig {
+  enabled: boolean;
+  cronExpression: string;
+  sourcesList: string;
+}
+
 export interface ClashWorkspaceState {
   overwrite: OverwriteSettings;
   groups: ProxyGroupConfig[];
@@ -80,6 +86,7 @@ export interface ClashWorkspaceState {
   kernel: KernelSettings;
   github: GithubAutomationConfig;
   customRules: CustomRulesConfig;
+  nodeSubscription: NodeSubscriptionConfig;
 }
 
 export interface GeneratedFile {

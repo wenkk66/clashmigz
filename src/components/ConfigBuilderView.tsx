@@ -1101,6 +1101,126 @@ export const ConfigBuilderView: React.FC<ConfigBuilderViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Sub-section: 每日自动提取节点生成订阅工作流 */}
+        <div className="mt-6 pt-6 border-t border-slate-100 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-800">
+                每日自动提取节点并生成订阅工作流 (.github/workflows/fetch-nodes-sub.yml)
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                每天按 Cron 自动抓取上游 YAML / Hysteria2 JSON 节点源，去重后输出 Clash Mi YAML 订阅与通用 Base64 订阅。
+              </p>
+            </div>
+            <label className="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={state.nodeSubscription?.enabled !== false}
+                onChange={(e) =>
+                  onChange({
+                    ...state,
+                    nodeSubscription: {
+                      ...state.nodeSubscription,
+                      enabled: e.target.checked,
+                    },
+                  })
+                }
+                className="h-4 w-4 rounded border-slate-300 text-blue-600"
+              />
+              启用节点订阅工作流
+            </label>
+          </div>
+
+          {state.nodeSubscription?.enabled !== false && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">
+                    节点提取预设频率
+                  </label>
+                  <select
+                    value={
+                      ['0 22 * * *', '0 0 * * *', '0 */12 * * *', '0 */6 * * *'].includes(
+                        state.nodeSubscription.cronExpression
+                      )
+                        ? state.nodeSubscription.cronExpression
+                        : 'custom'
+                    }
+                    onChange={(e) => {
+                      if (e.target.value !== 'custom') {
+                        onChange({
+                          ...state,
+                          nodeSubscription: {
+                            ...state.nodeSubscription,
+                            cronExpression: e.target.value,
+                          },
+                        });
+                      }
+                    }}
+                    className="w-full text-xs bg-white border border-slate-200 rounded-md px-3 py-2 text-slate-800"
+                  >
+                    <option value="0 22 * * *">每日北京时间 06:00 (UTC 22:00)</option>
+                    <option value="0 0 * * *">每日北京时间 08:00 (UTC 00:00)</option>
+                    <option value="0 */12 * * *">每 12 小时自动提取一次</option>
+                    <option value="0 */6 * * *">每 6 小时自动提取一次</option>
+                    <option value="custom">自定义 Cron 表达式</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">
+                    提取工作流 Cron 表达式 (UTC)
+                  </label>
+                  <input
+                    type="text"
+                    value={state.nodeSubscription.cronExpression}
+                    onChange={(e) =>
+                      onChange({
+                        ...state,
+                        nodeSubscription: {
+                          ...state.nodeSubscription,
+                          cronExpression: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full font-mono text-xs bg-white border border-slate-200 rounded-md px-3 py-2 text-slate-800 tabular-nums"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-medium text-slate-600">
+                    节点提取源列表 (rules/node-sources.txt)
+                  </label>
+                  <span className="font-mono tabular-nums text-[11px] text-slate-400">
+                    {
+                      state.nodeSubscription.sourcesList
+                        .split('\n')
+                        .map((l) => l.trim())
+                        .filter((l) => l && !l.startsWith('#') && !l.startsWith('//')).length
+                    }{' '}
+                    个源 URL
+                  </span>
+                </div>
+                <textarea
+                  rows={6}
+                  value={state.nodeSubscription.sourcesList}
+                  onChange={(e) =>
+                    onChange({
+                      ...state,
+                      nodeSubscription: {
+                        ...state.nodeSubscription,
+                        sourcesList: e.target.value,
+                      },
+                    })
+                  }
+                  className="w-full font-mono text-xs bg-slate-900 text-slate-100 rounded-md p-3.5 border border-slate-800 focus:outline-none focus:border-blue-500 leading-relaxed"
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );
